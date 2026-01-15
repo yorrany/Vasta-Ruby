@@ -1,21 +1,10 @@
 Rails.application.routes.draw do
-  resources :users
-  resources :profiles
-  resources :offers do
-    resources :checkouts, only: :create
-    resources :service_availabilities, only: [:index, :create, :destroy]
-    resources :appointments, only: [:index, :create] do
-      collection do
-        get :available_slots
-      end
-    end
-  end
+  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
-  resources :subscriptions, only: :create
-  get "/plans", to: "plans#index"
+  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
+  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  get "up" => "rails/health#show", as: :rails_health_check
 
-  get "/health", to: "health#index"
-  post "/stripe/webhooks", to: "stripe_webhooks#create"
+  # Defines the root path route ("/")
+  # root "posts#index"
 end
-
-
