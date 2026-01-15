@@ -31,3 +31,19 @@
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
+
+# --- Frontend (web) ---
+web/node_modules/
+web/.next/
+web/out/
+web/build/
+web/.env*.local
+
+# --- IDE & OS ---
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+

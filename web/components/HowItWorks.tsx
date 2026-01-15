@@ -1,49 +1,63 @@
+"use client"
+
+import { UserPlus, Palette, Rocket } from "lucide-react"
+
 export function HowItWorks() {
   const steps = [
     {
-      number: "01",
+      icon: <UserPlus className="h-6 w-6 text-vasta-primary" />,
       title: "Crie sua página grátis",
       description:
-        "Cadastre-se em segundos e ganhe sua URL personalizada para centralizar seus links e ofertas."
+        "Cadastre-se em segundos e ganhe sua URL personalizada para centralizar seus links e ofertas.",
+      color: "from-vasta-primary/20",
     },
     {
-      number: "02",
-      title: "Personalize com links e temas",
+      icon: <Palette className="h-6 w-6 text-vasta-accent" />,
+      title: "Estilo Único",
       description:
-        "Adicione links, escolha cores, fontes e organize seus produtos digitais em um layout profissional."
+        "Escolha cores, fontes e organize seus produtos com um layout que reflete sua marca pessoal.",
+      color: "from-vasta-accent/20",
     },
     {
-      number: "03",
-      title: "Explore recursos premium",
+      icon: <Rocket className="h-6 w-6 text-cyan-400" />,
+      title: "Escala & Venda",
       description:
-        "Ative planos avançados para liberar automações, analytics detalhado e experiências exclusivas."
-    }
+        "Receba pagamentos via Stripe e acompanhe seu crescimento com analytics em tempo real.",
+      color: "from-cyan-400/20",
+    },
   ]
 
   return (
-    <section id="recursos" className="border-b border-slate-800/60 bg-slate-950/60">
-      <div className="mx-auto max-w-6xl px-4 py-16 md:py-24">
+    <section id="recursos" className="relative border-b border-slate-800/60 bg-slate-950/60 py-24 md:py-32">
+      <div className="mx-auto max-w-6xl px-4">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-white md:text-3xl">
+          <h2 className="text-3xl font-bold text-white md:text-4xl">
             Como funciona o Vasta
           </h2>
-          <p className="mt-3 text-sm text-vasta-muted md:text-base">
-            Comece gratuitamente em poucos passos e evolua conforme suas vendas crescem.
+          <p className="mx-auto mt-4 max-w-xl text-vasta-muted">
+            Comece gratuitamente em poucos passos e transforme seus seguidores em clientes fiéis.
           </p>
         </div>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {steps.map(step => (
+
+        <div className="mt-16 grid gap-8 md:grid-cols-3">
+          {steps.map((step, index) => (
             <div
-              key={step.number}
-              className="rounded-2xl border border-slate-800 bg-slate-950/80 p-6 shadow-sm shadow-slate-900/50"
+              key={index}
+              className="group relative rounded-[2.5rem] border border-slate-800 bg-slate-950/40 p-10 transition-all hover:bg-slate-900/60"
             >
-              <div className="flex items-center gap-3">
-                <span className="text-lg font-semibold text-vasta-primary">{step.number}</span>
+              {/* Step counter */}
+              <div className="absolute top-8 right-8 text-4xl font-black text-slate-900 transition-colors group-hover:text-slate-800/50">
+                0{index + 1}
               </div>
-              <h3 className="mt-4 text-sm font-semibold text-white md:text-base">
+
+              <div className={`inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${step.color} to-transparent border border-slate-800`}>
+                {step.icon}
+              </div>
+
+              <h3 className="mt-8 text-lg font-bold text-white">
                 {step.title}
               </h3>
-              <p className="mt-3 text-xs text-vasta-muted md:text-sm">
+              <p className="mt-4 text-vasta-muted leading-relaxed">
                 {step.description}
               </p>
             </div>
@@ -53,4 +67,3 @@ export function HowItWorks() {
     </section>
   )
 }
-
