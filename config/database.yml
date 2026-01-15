@@ -90,3 +90,6 @@ production:
   database: vasta_production
   username: vasta
   password: <%= ENV["VASTA_DATABASE_PASSWORD"] %>
+  host: <%= ENV.fetch("DB_HOST", "aws-0-sa-east-1.pooler.supabase.com") %>
+  port: <%= ENV.fetch("DB_PORT", 6543) %>
+  prepared_statements: false
