@@ -6,7 +6,7 @@ export default {
       fontFamily: {
         serif: ["var(--font-serif)", "serif"],
         mono: ["var(--font-mono)", "monospace"],
-        sans: ["system-ui", "sans-serif"] // Fallback only
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"]
       },
       colors: {
         vasta: {

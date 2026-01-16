@@ -15,6 +15,7 @@ import {
   Sparkles,
   ShoppingBag,
 } from "lucide-react";
+import { useAuth } from "../lib/AuthContext";
 
 const CURATED_PORTRAITS = [
   "photo-1534528741775-53994a69daeb", // Original
@@ -39,14 +40,14 @@ const CURATED_BANNERS = [
 ];
 
 const CURATED_PRODUCTS = [
-  "photo-1626785774573-4b799314346d", // UI Design
-  "photo-1611162617474-5b21e879e113", // Framer
   "photo-1555066931-4365d14bab8c", // Code
-  "photo-1586717791821-3f44a563eb4c", // Product
-  "photo-1512486130939-2c4f79935e4f", // Desk
-  "photo-1499750310107-5fef28a66643", // Laptop
-  "photo-1542744094-3a31f272c490", // Planning
-  "photo-1558655146-d09347e92766", // Mobile
+  "photo-1498050108023-c5249f4df085", // Tech
+  "photo-1460925895917-afdab827c52f", // Marketing
+  "photo-1581291518066-6ee16960098f", // UX
+  "photo-1519389950473-47ba0277781c", // Collaboration
+  "photo-1454165833968-3f8681f17ed3", // Growth
+  "photo-1551434678-e076c223a692", // Team
+  "photo-1551288049-bbbda5366a41", // Statistics
 ];
 
 export function Hero() {
@@ -70,6 +71,18 @@ export function Hero() {
   const [product2Image, setProduct2Image] = useState(
     "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&h=400&fit=crop"
   );
+  const [currentTime, setCurrentTime] = useState("9:41");
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }));
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -82,10 +95,13 @@ export function Hero() {
     const randomBannerId = CURATED_BANNERS[Math.floor(Math.random() * CURATED_BANNERS.length)];
     setBannerImage(`https://images.unsplash.com/${randomBannerId}?w=800&h=400&fit=crop`);
 
-    // Randomize unique Products
-    const shuffledProducts = [...CURATED_PRODUCTS].sort(() => 0.5 - Math.random());
-    setProduct1Image(`https://images.unsplash.com/${shuffledProducts[0]}?w=400&h=400&fit=crop`);
-    setProduct2Image(`https://images.unsplash.com/${shuffledProducts[1]}?w=400&h=400&fit=crop`);
+    // Randomize unique Products with absolute fallback safety
+    const shuffledProducts = [...CURATED_PRODUCTS].sort(() => Math.random() - 0.5);
+    const p1 = shuffledProducts[0] || CURATED_PRODUCTS[0];
+    const p2 = shuffledProducts[1] || CURATED_PRODUCTS[1];
+    
+    setProduct1Image(`https://images.unsplash.com/${p1}?w=600&h=600&fit=crop&q=80`);
+    setProduct2Image(`https://images.unsplash.com/${p2}?w=600&h=600&fit=crop&q=80`);
   }, []);
 
   useEffect(() => {
@@ -97,13 +113,16 @@ export function Hero() {
     const timer = setTimeout(async () => {
       setChecking(true);
       try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/profiles/check_username?username=${username}`
+          `${apiUrl}/profiles/check_username?username=${username.toLowerCase()}`
         );
+        
+        if (!res.ok) throw new Error("API Offline");
+        
         const data = await res.json();
         
         if (data.available === false) {
-          // Robust suggestions from backend or local fallback
           data.suggestions = data.suggestions || [
             `${username}pro`,
             `${username}hq`,
@@ -114,6 +133,16 @@ export function Hero() {
         setAvailability(data);
       } catch (err) {
         console.error("Error checking username:", err);
+        // Fail-safe for local dev without backend
+        if (username.toLowerCase() === "admin" || username.toLowerCase() === "vasta") {
+          setAvailability({
+            available: false,
+            message: "indisponível",
+            suggestions: [`${username}pro`, `${username}hq`, `sou${username}`]
+          });
+        } else {
+          setAvailability({ available: true, message: "Disponível!" });
+        }
       } finally {
         setChecking(false);
       }
@@ -121,6 +150,8 @@ export function Hero() {
 
     return () => clearTimeout(timer);
   }, [username]);
+
+  const { openAuthModal } = useAuth();
 
   return (
     <section className="relative overflow-hidden border-b border-vasta-border pt-24 pb-20 md:pb-32 lg:pt-40 bg-vasta-bg">
@@ -146,23 +177,24 @@ export function Hero() {
             COMECE GRATUITAMENTE
           </div>
 
-          <div className="space-y-4 animate-fade-in-up delay-100 fill-mode-forwards opacity-0">
-            <h1 className="text-5xl font-black tracking-tight text-vasta-text sm:text-6xl lg:text-7xl leading-[1.1]">
+          <div className="space-y-6 animate-fade-in-up delay-100 fill-mode-forwards opacity-0 text-left">
+            <h1 className="text-[2.75rem] font-black tracking-tighter text-vasta-text sm:text-7xl lg:text-8xl leading-[0.95] md:leading-[0.9]">
               Sua expertise <br />
+              <span className="text-vasta-muted/60">merece</span> <br />
               <span className="gradient-title relative inline-block">
-                merece destaque.
-                <Sparkles className="absolute -top-6 -right-8 h-8 w-8 text-yellow-400 rotate-12 animate-pulse-soft" />
+                destaque.
+                <div className="absolute -bottom-2 left-0 h-2 w-full bg-vasta-primary/20 blur-md rounded-full -z-10 animate-pulse-soft" />
               </span>
             </h1>
-            <p className="mx-auto max-w-xl text-lg text-vasta-muted md:mx-0 md:text-xl leading-relaxed font-medium">
-              Unifique sua presença digital. Compartilhe links, venda produtos e
-              cresça sua audiência com uma única URL profissional.
+            <p className="max-w-xl text-lg text-vasta-muted md:text-xl leading-relaxed font-medium">
+              A única plataforma que transforma sua autoridade em um negócio estruturado. 
+              Unifique links, venda produtos e escale seu faturamento.
             </p>
           </div>
 
           <div className="flex flex-col gap-4 sm:mx-auto sm:max-w-md md:mx-0 animate-fade-in-up delay-200 fill-mode-forwards opacity-0">
             <div
-              className={`flex flex-col gap-3 rounded-[2rem] border transition-all duration-300 p-2 sm:flex-row sm:items-center shadow-lg hover:shadow-xl ${
+              className={`group flex flex-col sm:flex-row items-center gap-1 rounded-[2.5rem] border p-1.5 transition-all duration-300 shadow-lg hover:shadow-xl ${
                 availability?.available
                   ? "border-emerald-500/50 bg-emerald-500/5 ring-4 ring-emerald-500/10"
                   : availability?.available === false
@@ -170,25 +202,26 @@ export function Hero() {
                   : "border-vasta-border bg-vasta-surface-soft/80 ring-4 ring-vasta-border/20"
               }`}
             >
-              <div className="flex flex-1 items-center px-5 py-3 relative">
-                <span className="text-base font-bold text-vasta-muted">
+              <div className="flex flex-1 items-center pl-4 pr-1 py-2 min-w-0">
+                <span className="text-sm font-bold text-vasta-muted shrink-0">
                   vasta.pro/
                 </span>
                 <input
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ""))}
                   placeholder="seu-nome"
-                  className="flex-1 bg-transparent px-0.5 text-base font-bold text-vasta-text placeholder:text-vasta-muted/50 focus:outline-none"
+                  className="w-full bg-transparent px-1 text-sm font-bold text-vasta-text placeholder:text-vasta-muted/50 focus:outline-none min-w-0"
                   autoCapitalize="none"
                   autoCorrect="off"
                   spellCheck="false"
                 />
                 {checking && (
-                  <Loader2 className="absolute right-2 h-5 w-5 animate-spin text-vasta-primary" />
+                  <Loader2 className="h-4 w-4 animate-spin text-vasta-primary shrink-0 ml-1" />
                 )}
               </div>
               <button
-                className={`flex items-center justify-center gap-2 rounded-[1.5rem] px-8 py-4 text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg ${
+                onClick={() => openAuthModal('signup', username ? `Criar minha conta como ${username}` : undefined)}
+                className={`flex shrink-0 items-center justify-center gap-2 rounded-[2rem] px-5 py-3 text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg whitespace-nowrap ${
                   availability?.available 
                     ? "bg-emerald-500 text-white hover:bg-emerald-600" 
                     : "bg-vasta-text text-vasta-bg hover:bg-vasta-text-soft"
@@ -197,13 +230,18 @@ export function Hero() {
                   checking || (username.length > 0 && username.length < 3)
                 }
               >
-                {availability?.available ? "Garantir meu nome" : "Criar grátis"} 
-                <ArrowRight className="h-4 w-4" />
+                {availability?.available ? "Garantir nome" : "Criar grátis"} 
+                <ArrowRight className="h-4 w-4 shrink-0" />
               </button>
             </div>
 
             <div className="min-h-[24px] px-4">
-              {availability && (
+              {checking ? (
+                <div className="flex items-center gap-2 text-xs font-bold text-vasta-muted animate-pulse">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Verificando disponibilidade...
+                </div>
+              ) : availability && (
                 <div className="space-y-3 animate-in fade-in slide-in-from-top-1">
                   <div
                     className={`flex items-center gap-2 text-xs font-bold ${
@@ -286,7 +324,7 @@ export function Hero() {
                 <div className="h-full w-full rounded-[2.8rem] bg-vasta-bg overflow-hidden relative flex flex-col">
                   {/* Status Bar Mock */}
                   <div className="absolute top-0 w-full h-14 flex justify-between px-8 pt-5 text-[10px] font-semibold z-40 mix-blend-difference text-white">
-                    <span>9:41</span>
+                    <span>{currentTime}</span>
                     <div className="flex gap-1.5">
                       <div className="h-3 w-3 rounded-full border border-current opacity-80" />
                       <div className="h-3 w-3 rounded-full bg-current opacity-80" />
@@ -461,25 +499,36 @@ export function Hero() {
 
                     {/* Logo Footer */}
                     <div className="mt-6 flex justify-center pb-8 opacity-40">
-                      <div className="flex items-center gap-1.5 grayscale">
-                        <img src="/icone.svg" alt="Vasta Logo" className="h-4 w-4" />
-                        <span className="text-[10px] font-bold text-vasta-text tracking-tight">
-                          Criado no Vasta
-                        </span>
+                      <div className="flex items-center grayscale">
+                        <img src="/logo_branca.svg" alt="Vasta Logo" className="h-6 w-auto" />
                       </div>
                     </div>
                   </div>
 
                   {/* Floating Action Button / Notification */}
-                  <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-vasta-surface/80 backdrop-blur-md border border-vasta-border/50 text-vasta-text px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg z-50 animate-fade-in-up delay-[1000ms] fill-mode-forwards opacity-0 max-w-[95%] w-max">
-                    <div className="flex -space-x-1.5 shrink-0">
-                      <div className="h-4 w-4 rounded-full border border-white bg-gray-200" />
-                      <div className="h-4 w-4 rounded-full border border-white bg-gray-300" />
-                      <div className="h-4 w-4 rounded-full border border-white bg-gray-400" />
+                  <div className="absolute bottom-10 inset-x-0 flex justify-center z-50 px-4">
+                    <div className="bg-vasta-surface/95 backdrop-blur-xl border border-vasta-border/50 text-vasta-text pl-1.5 pr-4 py-1.5 rounded-full flex items-center gap-2 shadow-2xl animate-fade-in-up delay-[1000ms] fill-mode-forwards opacity-0 w-max max-w-full overflow-hidden">
+                      <div className="flex -space-x-2 shrink-0">
+                        {[CURATED_PORTRAITS[0], CURATED_PORTRAITS[1], CURATED_PORTRAITS[2]].map((id, i) => (
+                          <div key={i} className="h-4 w-4 rounded-full border border-vasta-surface overflow-hidden">
+                            <img 
+                              src={`https://images.unsplash.com/${id}?w=40&h=40&fit=crop`} 
+                              alt="User" 
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-1.5 min-w-0 pr-1">
+                        <span className="text-[8px] font-black text-vasta-text whitespace-nowrap uppercase tracking-tight">
+                          28 buscas hoje
+                        </span>
+                        <div className="h-0.5 w-0.5 rounded-full bg-vasta-muted/40 shrink-0" />
+                        <span className="text-[8px] font-bold text-vasta-muted/80 whitespace-nowrap">
+                          SP
+                        </span>
+                      </div>
                     </div>
-                    <span className="text-[9px] font-bold text-vasta-muted whitespace-nowrap">
-                      24 buscas hoje
-                    </span>
                   </div>
                 </div>
               </div>

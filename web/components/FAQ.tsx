@@ -55,7 +55,7 @@ export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0)
 
   return (
-    <section className="relative border-b border-slate-800/60 bg-vasta-bg py-24">
+    <section id="faq" className="relative border-b border-slate-800/60 bg-vasta-bg py-24">
       <div className="mx-auto max-w-3xl px-4">
         <div className="text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-slate-700/50 bg-slate-900/50 px-3 py-1 text-xs text-vasta-muted">
