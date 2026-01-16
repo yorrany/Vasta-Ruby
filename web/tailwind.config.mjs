@@ -4,7 +4,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"]
+        serif: ["var(--font-serif)", "serif"],
+        mono: ["var(--font-mono)", "monospace"],
+        sans: ["system-ui", "sans-serif"] // Fallback only
       },
       colors: {
         vasta: {

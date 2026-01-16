@@ -68,7 +68,7 @@ export default function DashboardLayout({ children }: Props) {
   const [settings, setSettings] = useState<AppearanceSettings>({
     profileImage: null,
     coverImage: null,
-    accentColor: "#6366F1", // Default Vasta Primary
+    accentColor: "#6366F1", // @vasta-ux-exception: Default State Value
     bgColor: null,
     typography: "Inter",
     linkStyle: "glass",
@@ -180,8 +180,8 @@ export default function DashboardLayout({ children }: Props) {
                   className="relative h-[600px] w-[300px] rounded-[3.5rem] border-8 border-vasta-surface shadow-2xl overflow-hidden transition-all duration-500"
                   style={{ 
                     fontFamily: settings.typography,
-                    backgroundColor: settings.bgColor || (settings.theme === 'light' ? '#FAFAF9' : '#0B0E14'),
-                    color: settings.theme === 'light' ? '#1C1917' : '#F3F4F6'
+                    backgroundColor: settings.bgColor || (settings.theme === 'light' ? '#FAFAF9' : '#0B0E14'), // @vasta-ux-exception: Default theme values
+                    color: settings.theme === 'light' ? '#1C1917' : '#F3F4F6' // @vasta-ux-exception: Default theme values
                   }}
                 >
                    {/* Cover */}

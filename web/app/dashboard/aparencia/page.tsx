@@ -64,7 +64,7 @@ export default function AparenciaPage() {
     updateSettings({
       profileImage: null,
       coverImage: null,
-      accentColor: "#6366F1",
+      accentColor: "#6366F1", // @vasta-ux-exception: Default State Value
       bgColor: null,
       typography: "Inter",
       linkStyle: "glass",
@@ -221,7 +221,7 @@ export default function AparenciaPage() {
                 onClick={() => updateSettings({ theme: 'light' })}
                 className={`relative group overflow-hidden rounded-3xl border-2 p-1 transition-all hover:scale-[1.02] active:scale-[0.98] ${settings.theme === 'light' ? 'border-vasta-primary shadow-lg shadow-vasta-primary/10' : 'border-vasta-border hover:border-vasta-muted'}`}
               >
-                <div className="h-20 w-full rounded-2xl bg-[#FAFAF9] flex items-center justify-center">
+                <div className="h-20 w-full rounded-2xl bg-[#FAFAF9] flex items-center justify-center"> {/* @vasta-ux-exception: Theme Preview Color */}
                   <div className="h-8 w-16 bg-white rounded-lg shadow-sm" />
                 </div>
                 <div className="p-3 text-center">
@@ -234,8 +234,8 @@ export default function AparenciaPage() {
                 onClick={() => updateSettings({ theme: 'dark' })}
                 className={`relative group overflow-hidden rounded-3xl border-2 p-1 transition-all hover:scale-[1.02] active:scale-[0.98] ${settings.theme === 'dark' ? 'border-vasta-primary shadow-lg shadow-vasta-primary/10' : 'border-vasta-border hover:border-vasta-muted'}`}
               >
-                <div className="h-20 w-full rounded-2xl bg-[#0B0E14] flex items-center justify-center">
-                  <div className="h-8 w-16 bg-[#151923] rounded-lg shadow-sm" />
+                <div className="h-20 w-full rounded-2xl bg-[#0B0E14] flex items-center justify-center"> {/* @vasta-ux-exception: Theme Preview Color */}
+                  <div className="h-8 w-16 bg-[#151923] rounded-lg shadow-sm" /> {/* @vasta-ux-exception: Theme Preview Color */}
                 </div>
                 <div className="p-3 text-center">
                   <span className="text-sm font-bold text-vasta-text">Escuro Puro</span>
@@ -246,14 +246,14 @@ export default function AparenciaPage() {
 
             <h4 className="text-xs font-bold text-vasta-muted uppercase tracking-widest mt-8 mb-4 px-1">Cor de Destaque</h4>
             <div className="flex flex-wrap gap-4 px-1">
-              {['#6366F1', '#EC4899', '#10B981', '#F59E0B', '#000000', '#EF4444'].map((color) => (
+              {['#6366F1', '#EC4899', '#10B981', '#F59E0B', '#000000', '#EF4444'].map((color) => ( // @vasta-ux-exception: Color Picker Palette
                 <button
                   key={color}
                   onClick={() => updateSettings({ accentColor: color })}
                   className={`h-12 w-12 rounded-2xl transition-all hover:scale-110 active:scale-90 flex items-center justify-center group ${settings.accentColor === color ? 'ring-4 ring-vasta-primary/10 border-2 border-vasta-primary' : 'border border-vasta-border'}`}
                   style={{ backgroundColor: color }}
                 >
-                  {settings.accentColor === color && <Check className={color === '#000000' ? 'text-white' : 'text-black/50'} size={20} />}
+                  {settings.accentColor === color && <Check className={color === '#000000' ? 'text-white' : 'text-black/50'} size={20} />} {/* @vasta-ux-exception: Contrast Logic */}
                 </button>
               ))}
             </div>

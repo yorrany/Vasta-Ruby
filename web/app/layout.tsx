@@ -1,10 +1,15 @@
-import { Inter } from "next/font/google"
+import { Playfair_Display, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import type { ReactNode } from "react"
 
-const inter = Inter({ 
+const playfair = Playfair_Display({ 
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-serif",
+})
+
+const jetbrains = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
 })
 
 export const metadata = {
@@ -18,8 +23,8 @@ type Props = {
 
 export default function RootLayout({ children }: Props) {
   return (
-    <html lang="pt-BR" className={inter.variable}>
-      <body className="bg-vasta-bg text-vasta-text antialiased font-sans">
+    <html lang="pt-BR" className={`${playfair.variable} ${jetbrains.variable}`}>
+      <body className="bg-vasta-bg text-vasta-text antialiased font-serif">
         {children}
       </body>
     </html>

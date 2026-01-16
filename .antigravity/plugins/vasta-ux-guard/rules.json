@@ -1,0 +1,62 @@
+{
+  "typography": {
+    "max_families": 2,
+    "forbidden_fonts": ["Inter", "Roboto", "Arial", "system-ui", "Space Grotesk"],
+    "required_semantics": {
+      "serif": ["importance", "irreversible"],
+      "monospace": ["system", "data"]
+    }
+  },
+  "colors": {
+    "allow_hex": false,
+    "allow_rgb": false,
+    "require_css_variables": true,
+    "forbidden_patterns": [
+      "bg-gradient-to-r", 
+      "bg-gradient-to-l", 
+      "bg-gradient-to-t", 
+      "bg-gradient-to-b",
+      "text-transparent",
+      "bg-clip-text"
+    ]
+  },
+  "motion": {
+    "forbidden_easings": ["bounce", "spring", "elastic"],
+    "forbidden_classes": ["animate-bounce", "animate-pulse", "animate-spin"]
+  },
+  "layout": {
+    "forbidden_classes": ["grid-cols-auto-fit", "grid-cols-auto-fill"],
+    "anti_patterns": ["card-grid"]
+  },
+  "regex_checks": [
+    {
+      "pattern": "(font-family:\\s*['\"]?|import\\s+\\{?\\s*)(Inter|Roboto|Arial|Space Grotesk)",
+      "message": "Forbidden font family detected (CSS or Import).",
+      "severity": "CRITICAL",
+      "principle": "Restraint over abundance",
+      "suggestion": "Use the Vasta serif or mono tokens."
+    },
+    {
+      "pattern": "#[0-9a-fA-F]{3,6}",
+      "message": "Hardcoded hex color detected.",
+      "severity": "CRITICAL",
+      "exclude_files": ["tailwind.config.ts", "globals.css", "tokens.json"],
+      "principle": "Nothing is accidental",
+      "suggestion": "Use a semantic CSS variable (e.g. var(--color-surface))."
+    },
+    {
+      "pattern": "animate-bounce",
+      "message": "Playful motion (bounce) is forbidden.",
+      "severity": "CRITICAL",
+      "principle": "Silence over decoration",
+      "suggestion": "Remove the animation or use a deliberate state transition."
+    },
+    {
+      "pattern": "bg-gradient-to-",
+      "message": "Gradients are flagged for review.",
+      "severity": "WARNING",
+      "principle": "Everything has intent",
+      "suggestion": "Ensure this gradient serves a functional purpose, not just decoration."
+    }
+  ]
+}
