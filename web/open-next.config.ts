@@ -1,5 +1,9 @@
+import type { OpenNextConfig } from 'open-next/types/open-next'
 
 const config = {
+  dangerous: {
+    disableFontManifest: true,
+  },
   default: {
     override: {
       wrapper: "cloudflare-node",
@@ -18,6 +22,11 @@ const config = {
       proxyExternalRequest: "fetch",
     },
   },
+
+  unsupported: {
+    // Disable file system access for font manifest causing readFileSync error
+    // This forces Next.js to inline font usage or skip manifest loading at runtime
+  }
 };
 
 export default config;
