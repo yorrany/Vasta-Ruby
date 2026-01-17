@@ -1,6 +1,7 @@
 import { Playfair_Display, JetBrains_Mono, Outfit } from "next/font/google"
 import "./globals.css"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "../components/ThemeProvider"
 import type { ReactNode } from "react"
 
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: Props) {
             {children}
             <AuthModal />
             <SpeedInsights />
+            <Analytics />
           </AuthProvider>
         </ThemeProvider>
       </body>
