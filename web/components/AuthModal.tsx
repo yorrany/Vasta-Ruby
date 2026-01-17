@@ -105,6 +105,8 @@ export function AuthModal() {
     }
   }
 
+
+
   const handleOAuth = async (provider: 'google' | 'linkedin' | 'github' | 'facebook') => {
     await supabase.auth.signInWithOAuth({
       provider,
@@ -112,6 +114,30 @@ export function AuthModal() {
         redirectTo: `${window.location.origin}/auth/callback`,
       }
     })
+  }
+
+  const handleSignupWithPassword = async () => {
+    setLoading(true)
+    setError(null)
+
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      }
+    })
+
+    if (signUpError) {
+      setError(signUpError.message)
+      setLoading(false)
+    } else if (data.session) {
+      router.refresh()
+      closeAuthModal()
+    } else {
+      setStep('SUCCESS')
+      setLoading(false)
+    }
   }
 
   return (
@@ -310,7 +336,7 @@ export function AuthModal() {
                       />
                     </div>
                     <button
-                      onClick={handleLogin}
+                      onClick={handleSignupWithPassword}
                       className="w-full rounded-xl bg-vasta-text py-2.5 text-xs font-bold text-vasta-bg hover:opacity-90"
                     >
                       Criar conta gratuita
