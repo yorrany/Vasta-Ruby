@@ -22,7 +22,10 @@ const outfit = Outfit({
 
 export const metadata = {
   title: "Vasta",
-  description: "Hub de presença digital monetizável"
+  description: "Hub de presença digital monetizável",
+  icons: {
+    icon: "/favicon.png",
+  },
 }
 
 type Props = {
