@@ -1,0 +1,23 @@
+version: 1.0
+project: Vasta
+
+policies:
+  secrets:
+    enforce_classification: true
+    allow_frontend_secrets: false
+    block_on_leak: true
+    scan_docker_layers: true
+
+  logging:
+    filter_sensitive_params: true
+    block_env_logging: true
+
+  auth:
+    backend_only_validation: true
+    mandatory_token_expiration: true
+
+  dependencies:
+    block_severity: ["HIGH", "CRITICAL"]
+    auto_update_security_patches: true
+
+manifesto_version: "Absolute-1.0"
