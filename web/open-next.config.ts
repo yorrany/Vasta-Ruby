@@ -3,6 +3,7 @@ import type { OpenNextConfig } from 'open-next/types/open-next'
 const config = {
   dangerous: {
     disableFontManifest: true,
+    enableCacheInterception: false,
   },
   default: {
     override: {
