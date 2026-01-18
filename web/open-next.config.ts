@@ -1,17 +1,26 @@
-import type { OpenNextConfig } from '@opennextjs/aws/types/open-next';
-
-export default {
+const config = {
   default: {
-    placement: "arch",
     override: {
-      wrapper: "cloudflare",
+      wrapper: "cloudflare-node",
       converter: "edge",
-      imageOptimization: {
-        width: 1920,
-        height: 1080,
-        quality: 80,
-      },
+      proxyExternalRequest: "fetch",
+      incrementalCache: "dummy",
+      tagCache: "dummy",
+      queue: "dummy",
     },
   },
-  buildCommand: "npx @opennextjs/cloudflare build",
-} as OpenNextConfig;
+  middleware: {
+    external: true,
+    override: {
+      wrapper: "cloudflare-edge",
+      converter: "edge",
+      proxyExternalRequest: "fetch",
+      incrementalCache: "dummy",
+      tagCache: "dummy",
+      queue: "dummy",
+    },
+  },
+  edgeExternals: ["node:crypto"],
+};
+
+export default config;
