@@ -32,14 +32,28 @@ export function Pricing() {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-        const res = await fetch(`${apiUrl}/plans`);
-        if (!res.ok) throw new Error("API Offline");
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://vasta.pro";
+        // Attempt to fetch from API
+        // Added a short timeout to fail fast if offline
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        
+        const res = await fetch(`${apiUrl}/plans`, { signal: controller.signal }).catch(() => null);
+        clearTimeout(timeoutId);
+
+        if (!res || !res.ok) throw new Error("API Offline or Unreachable");
+        
         const data = await res.json();
-        setPlans(data);
+        if (Array.isArray(data) && data.length > 0) {
+            setPlans(data);
+            return;
+        }
+        throw new Error("Invalid Data");
+
       } catch (err) {
-        console.error("Error fetching plans:", err);
-        // Fallback with high fidelity plans if backend is offline
+        // Silently fall back to static data WITHOUT console.error to avoid error overlay
+        // console.warn("Using offline plans data"); // Optional warning
+        
         setPlans([
           {
             code: "start",

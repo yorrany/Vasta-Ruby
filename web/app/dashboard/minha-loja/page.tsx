@@ -1,66 +1,164 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { Package, Plus, Loader2, Edit, Share2 } from "lucide-react"
+import { createClient } from "../../../lib/supabase"
+import { useAuth } from "../../../lib/AuthContext"
+import { ProductModal } from "../../../components/products/ProductModal"
+
+type Product = {
+  id: number
+  title: string
+  description: string
+  price: number
+  image_url: string | null
+  file_url: string | null
+  status: string
+  type: 'digital' | 'service' | 'physical'
+}
+
 export default function MinhaLojaPage() {
-  const products = [
-    {
-      id: 1,
-      title: "Prompts de decoração",
-      price: "R$ 9,90",
-      status: "Ativo"
-    },
-    {
-      id: 2,
-      title: "Prompts de inverno",
-      price: "R$ 9,90",
-      status: "Ativo"
-    }
-  ]
+  const { user } = useAuth()
+  const supabase = createClient()
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+
+  const fetchProducts = async () => {
+    if (!user) return
+    const { data } = await supabase
+        .from('products')
+        .select('*')
+        .eq('profile_id', user.id)
+        .order('created_at', { ascending: false })
+    
+    if (data) setProducts(data)
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    fetchProducts()
+  }, [user])
+
+  const openNewProductModal = () => {
+    setEditingProduct(null)
+    setIsModalOpen(true)
+  }
+
+  const openEditModal = (product: Product) => {
+    setEditingProduct(product)
+    setIsModalOpen(true)
+  }
+
+  if (loading) {
+     return <div className="flex h-64 items-center justify-center"><Loader2 className="animate-spin text-vasta-primary" /></div>
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-white">Minha loja</h1>
-        <button className="rounded-full bg-gradient-to-r from-vasta-primary to-vasta-accent px-4 py-2 text-xs font-semibold text-white">
-          Novo produto
-        </button>
+    <div className="space-y-8 pb-32 animate-in fade-in duration-500">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+         <div>
+            <h1 className="text-2xl font-bold text-vasta-text">Minha Loja</h1>
+            <p className="text-sm text-vasta-muted">Gerencie seus produtos digitais e serviços</p>
+         </div>
+         <button 
+           onClick={openNewProductModal}
+           className="flex items-center justify-center gap-2 rounded-2xl bg-vasta-primary px-6 py-3 text-sm font-bold text-white transition-all hover:bg-vasta-primary-soft shadow-lg shadow-vasta-primary/20 hover:scale-105 active:scale-95"
+         >
+           <Plus size={18} /> Novo Produto
+         </button>
       </div>
-      <section className="space-y-4">
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4 text-xs text-vasta-text">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-semibold text-emerald-400">Pagamentos ativos</div>
-              <div className="mt-1 text-vasta-muted">
-                Você está pronto para vender e receber pagamentos via Stripe.
+
+      <section className="space-y-6">
+        <div className="rounded-[2rem] border border-emerald-500/20 bg-emerald-500/5 p-6 relative overflow-hidden">
+           <div className="absolute top-0 right-0 p-8 opacity-10">
+              <Package size={100} className="text-emerald-500" />
+           </div>
+           <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-500 mb-2 border border-emerald-500/20">
+                 <span className="relative flex h-2 w-2">
+                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                 </span>
+                 Checkout Ativo
               </div>
-            </div>
-          </div>
+              <h3 className="text-lg font-bold text-vasta-text">Você está pronto para vender!</h3>
+              <p className="text-sm text-vasta-muted mt-1 max-w-md">
+                Seus produtos aparecerão automaticamente no seu perfil público e os pagamentos cairão direto na sua conta Stripe conectada.
+              </p>
+           </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          {products.map(product => (
-            <div
-              key={product.id}
-              className="flex flex-col rounded-2xl border border-slate-800 bg-slate-950/80 p-4"
-            >
-              <div className="h-32 rounded-xl bg-slate-800" />
-              <div className="mt-3 text-xs font-semibold text-vasta-muted">
-                DIGITAL • {product.status.toUpperCase()}
-              </div>
-              <div className="mt-1 text-sm font-semibold text-white">
-                {product.title}
-              </div>
-              <div className="text-xs text-vasta-text">
-                {product.price}
-              </div>
-              <div className="mt-3 flex gap-2 text-xs">
-                <button className="flex-1 rounded-full bg-slate-900 px-3 py-1 text-vasta-text">
-                  Editar
+
+        {products.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-[2.5rem] border border-dashed border-vasta-border py-24 text-center bg-vasta-surface/30">
+                <div className="h-20 w-20 rounded-3xl bg-vasta-surface-soft flex items-center justify-center mb-6 text-vasta-muted shadow-sm">
+                    <Package size={40} />
+                </div>
+                <h3 className="text-xl font-bold text-vasta-text mb-2">Sua loja está vazia</h3>
+                <p className="text-vasta-muted max-w-xs mx-auto mb-8 leading-relaxed">Comece a monetizar sua audiência vendendo e-books, consultorias ou presets.</p>
+                <button 
+                    onClick={openNewProductModal}
+                    className="text-sm font-bold text-vasta-primary hover:underline underline-offset-4"
+                >
+                    Criar primeiro produto
                 </button>
-                <button className="flex-1 rounded-full bg-slate-900 px-3 py-1 text-vasta-text">
-                  Compartilhar
-                </button>
-              </div>
             </div>
-          ))}
-        </div>
+        ) : (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map(product => (
+                <div
+                key={product.id}
+                className="group flex flex-col rounded-[2rem] border border-vasta-border bg-vasta-surface overflow-hidden hover:shadow-xl hover:shadow-black/5 hover:border-vasta-primary/30 transition-all duration-300"
+                >
+                <div className="h-48 bg-vasta-surface-soft relative overflow-hidden">
+                    {product.image_url ? (
+                        <img src={product.image_url} alt={product.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-vasta-bg/50">
+                            <Package className="text-vasta-muted/30" size={40} />
+                        </div>
+                    )}
+                    <div className="absolute top-4 right-4">
+                        <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-wider border border-white/10">
+                            {product.type}
+                        </span>
+                    </div>
+                </div>
+                
+                <div className="p-5 flex-1 flex flex-col">
+                    <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-base font-bold text-vasta-text leading-tight line-clamp-2">{product.title}</h3>
+                    </div>
+                    
+                    <p className="text-sm font-bold text-vasta-primary mb-4">
+                        {product.price > 0 ? `R$ ${product.price.toFixed(2).replace('.', ',')}` : 'Grátis'}
+                    </p>
+
+                    <div className="mt-auto flex gap-2">
+                        <button 
+                            onClick={() => openEditModal(product)}
+                            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-vasta-surface-soft border border-vasta-border py-2.5 text-xs font-bold text-vasta-text hover:bg-vasta-border/50 transition-colors"
+                        >
+                            <Edit size={14} /> Editar
+                        </button>
+                        <button className="flex items-center justify-center p-2.5 rounded-xl bg-vasta-surface-soft border border-vasta-border text-vasta-muted hover:text-vasta-text hover:bg-vasta-border/50 transition-colors">
+                            <Share2 size={16} />
+                        </button>
+                    </div>
+                </div>
+                </div>
+            ))}
+            </div>
+        )}
       </section>
+
+      <ProductModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        productToEdit={editingProduct}
+        onSuccess={fetchProducts}
+      />
     </div>
   )
 }

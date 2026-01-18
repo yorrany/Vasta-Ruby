@@ -1,5 +1,7 @@
+const isDev = process.env.NODE_ENV !== 'production';
+
 const nextConfig = {
-  output: 'export',
+  output: isDev ? undefined : 'export',
   images: { unoptimized: true },
   reactStrictMode: true,
   typescript: {

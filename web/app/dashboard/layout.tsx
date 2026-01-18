@@ -1,9 +1,11 @@
 "use client"
 
-import { useState, createContext, useContext, type ReactNode } from "react"
+import { useState, createContext, useContext, useEffect, type ReactNode } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LayoutDashboard, Menu, X, GripVertical, Image as ImageIcon } from "lucide-react"
+import { createClient } from "../../lib/supabase"
+import { useAuth } from "../../lib/AuthContext"
 
 // Types for Appearance
 export type LinkStyle = 'glass' | 'solid' | 'outline'
@@ -39,15 +41,16 @@ type Props = {
 }
 
 const navItems = [
+  { href: "/dashboard", label: "Início", exact: true },
   { href: "/dashboard/links", label: "Links" },
   { href: "/dashboard/aparencia", label: "Aparência" },
   { href: "/dashboard/minha-loja", label: "Minha Loja" },
   { href: "/dashboard/vendas", label: "Vendas" }
 ]
 
-function SidebarLink({ href, label }: { href: string; label: string }) {
+function SidebarLink({ href, label, exact }: { href: string; label: string; exact?: boolean }) {
   const pathname = usePathname()
-  const active = pathname === href
+  const active = exact ? pathname === href : pathname.startsWith(href)
 
   return (
     <Link
@@ -66,21 +69,72 @@ function SidebarLink({ href, label }: { href: string; label: string }) {
 import AuthGuard from "../../components/auth/AuthGuard"
 
 export default function DashboardLayout({ children }: Props) {
+  const { user } = useAuth()
+  const supabase = createClient()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [settings, setSettings] = useState<AppearanceSettings>({
+  
+  // Default settings
+  const defaultSettings: AppearanceSettings = {
     profileImage: null,
     coverImage: null,
-    accentColor: "#6366F1", // @vasta-ux-exception: Default State Value
+    accentColor: "#6366F1",
     bgColor: null,
     typography: "Inter",
     linkStyle: "glass",
     theme: "adaptive",
     username: "seunome",
     bio: "Sua bio inspiradora"
-  })
+  }
 
-  const updateSettings = (newSettings: Partial<AppearanceSettings>) => {
+  const [settings, setSettings] = useState<AppearanceSettings>(defaultSettings)
+
+  // Fetch initial settings
+  useEffect(() => {
+    async function fetchProfile() {
+      if (!user) return
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+      
+      if (data) {
+        setSettings({
+            profileImage: data.profile_image,
+            coverImage: data.cover_image,
+            accentColor: data.accent_color || "#6366F1",
+            bgColor: data.bg_color,
+            typography: data.typography || "Inter",
+            linkStyle: (data.link_style as LinkStyle) || "glass",
+            theme: (data.theme as SiteTheme) || "adaptive",
+            username: data.username || "seunome",
+            bio: data.bio || ""
+        })
+      }
+    }
+    fetchProfile()
+  }, [user])
+
+  const updateSettings = async (newSettings: Partial<AppearanceSettings>) => {
+    // Optimistic UI update
     setSettings(prev => ({ ...prev, ...newSettings }))
+    
+    if (!user) return
+
+    // Map frontend settings to DB columns (snake_case)
+    const updates: any = {}
+    if (newSettings.profileImage !== undefined) updates.profile_image = newSettings.profileImage
+    if (newSettings.coverImage !== undefined) updates.cover_image = newSettings.coverImage
+    if (newSettings.accentColor !== undefined) updates.accent_color = newSettings.accentColor
+    if (newSettings.bgColor !== undefined) updates.bg_color = newSettings.bgColor
+    if (newSettings.typography !== undefined) updates.typography = newSettings.typography
+    if (newSettings.linkStyle !== undefined) updates.link_style = newSettings.linkStyle
+    if (newSettings.theme !== undefined) updates.theme = newSettings.theme
+    if (newSettings.username !== undefined) updates.username = newSettings.username
+    if (newSettings.bio !== undefined) updates.bio = newSettings.bio
+
+    await supabase.from('profiles').update(updates).eq('id', user.id)
   }
 
   return (
@@ -131,8 +185,10 @@ export default function DashboardLayout({ children }: Props) {
             </div>
             <nav className="mt-6 flex flex-1 flex-col gap-1 px-4 text-sm">
               {navItems.map(item => (
-                 <SidebarLink key={item.href} href={item.href} label={item.label} />
+                 <SidebarLink key={item.href} href={item.href} label={item.label} exact={item.exact} />
               ))}
+              <div className="my-2 h-px bg-vasta-border/50 mx-2" />
+              <SidebarLink href="/" label="Voltar para o site" />
             </nav>
             <div className="border-t border-vasta-border px-4 py-4 text-xs text-vasta-muted">
               <div className="flex items-center justify-between">
@@ -178,84 +234,7 @@ export default function DashboardLayout({ children }: Props) {
                   Preview ao vivo
                 </div>
                 
-                <div className="flex justify-center sticky top-0">
-                  <div 
-                    className="relative h-[600px] w-[300px] rounded-[3.5rem] border-8 border-vasta-surface shadow-2xl overflow-hidden transition-all duration-500"
-                    style={{ 
-                      fontFamily: settings.typography,
-                      backgroundColor: settings.bgColor || (settings.theme === 'light' ? '#FAFAF9' : '#0B0E14'), // @vasta-ux-exception: Default theme values
-                      color: settings.theme === 'light' ? '#1C1917' : '#F3F4F6' // @vasta-ux-exception: Default theme values
-                    }}
-                  >
-                     {/* Cover */}
-                     <div className="absolute top-0 left-0 right-0 h-32 bg-vasta-surface-soft overflow-hidden">
-                        {settings.coverImage ? (
-                          <img src={settings.coverImage} className="h-full w-full object-cover" alt="Cover" />
-                        ) : (
-                          <div className="h-full w-full bg-gradient-to-br from-vasta-primary/20 to-vasta-accent/20" />
-                        )}
-                     </div>
-
-                     <div className="relative z-10 p-4 flex flex-col items-center pt-20">
-                        {/* Avatar */}
-                        <div className="h-24 w-24 rounded-full border-4 border-vasta-surface bg-vasta-surface-soft shadow-xl overflow-hidden">
-                          {settings.profileImage ? (
-                            <img src={settings.profileImage} className="h-full w-full object-cover" alt="Avatar" />
-                          ) : (
-                            <div className="flex h-full items-center justify-center bg-gradient-to-tr from-vasta-primary to-vasta-accent">
-                               <span className="text-xl font-bold text-white uppercase">{settings.username.slice(0,2)}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="text-center mt-3">
-                           <h2 className="text-base font-bold">@{settings.username}</h2>
-                           <p className="text-[10px] opacity-60 mt-1 max-w-[200px] line-clamp-2">{settings.bio}</p>
-                        </div>
-
-                        {/* Mock Links */}
-                        <div className="w-full space-y-3 mt-8">
-                          {[1, 2, 3].map((i) => (
-                            <div 
-                              key={i}
-                              className={`flex items-center gap-3 p-3 rounded-2xl transition-all shadow-sm ${
-                                settings.linkStyle === 'glass' 
-                                  ? 'bg-white/10 backdrop-blur-md border border-white/20' 
-                                  : settings.linkStyle === 'solid'
-                                  ? 'text-white border-transparent'
-                                  : 'bg-transparent border-2'
-                              }`}
-                              style={{ 
-                                borderColor: (settings.linkStyle === 'outline' || settings.linkStyle === 'glass') ? settings.accentColor : 'transparent',
-                                backgroundColor: settings.linkStyle === 'solid' ? settings.accentColor : undefined,
-                                boxShadow: settings.linkStyle === 'glass' ? `0 0 15px ${settings.accentColor}33` : undefined
-                              }}
-                            >
-                               <div className="h-8 w-8 rounded-xl bg-white/20 flex items-center justify-center">
-                                  <ImageIcon size={16} />
-                               </div>
-                               <div className="flex-1 h-3 rounded bg-white/20" />
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Store Mock */}
-                        <div className="w-full mt-8 p-4 rounded-[2rem] bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5">
-                           <div className="flex items-center justify-between mb-4">
-                              <span className="text-[10px] font-bold opacity-50">Minha Loja</span>
-                              <div className="h-1.5 w-12 rounded bg-vasta-primary" />
-                           </div>
-                           <div className="grid grid-cols-2 gap-2">
-                              <div className="aspect-square rounded-2xl bg-black/5 dark:bg-white/5" />
-                              <div className="aspect-square rounded-2xl bg-black/5 dark:bg-white/5" />
-                           </div>
-                        </div>
-                     </div>
-
-                     {/* Notch */}
-                     <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-24 bg-vasta-surface rounded-b-3xl z-50 shadow-inner" />
-                  </div>
-                </div>
+                <PreviewMockup settings={settings} />
               </aside>
             </main>
           </div>
@@ -264,4 +243,151 @@ export default function DashboardLayout({ children }: Props) {
     </AuthGuard>
   )
 }
+
+function PreviewMockup({ settings }: { settings: AppearanceSettings }) {
+  const { user } = useAuth()
+  const supabase = createClient()
+  const [links, setLinks] = useState<any[]>([])
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+       if (!user) return
+       
+       // Fetch Links
+       const { data: linksData } = await supabase
+         .from('links')
+         .select('*')
+         .eq('profile_id', user.id)
+         .eq('is_active', true)
+         .order('display_order', { ascending: true })
+        
+       if (linksData) setLinks(linksData)
+
+       // Fetch Products
+       const { data: productsData } = await supabase
+         .from('products')
+         .select('*')
+         .eq('profile_id', user.id)
+         .order('created_at', { ascending: false })
+         .limit(4) // Limit for preview
+        
+       if (productsData) setProducts(productsData)
+       setLoading(false)
+    }
+
+    fetchData()
+
+    // Real-time simple subscription for updates (Optional improvement)
+    const channel = supabase.channel('preview-updates')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'links', filter: `profile_id=eq.${user?.id}` }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products', filter: `profile_id=eq.${user?.id}` }, () => fetchData())
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user])
+
+  return (
+    <div className="flex justify-center sticky top-0">
+      <div 
+        className="relative h-[600px] w-[300px] rounded-[3.5rem] border-8 border-vasta-surface shadow-2xl overflow-hidden transition-all duration-500 overflow-y-auto custom-scrollbar"
+        style={{ 
+          fontFamily: settings.typography,
+          backgroundColor: settings.bgColor || (settings.theme === 'light' ? '#FAFAF9' : '#0B0E14'), 
+          color: settings.theme === 'light' ? '#1C1917' : '#F3F4F6'
+        }}
+      >
+          {/* Cover */}
+          <div className="absolute top-0 left-0 right-0 h-32 bg-vasta-surface-soft overflow-hidden shrink-0">
+            {settings.coverImage ? (
+              <img src={settings.coverImage} className="h-full w-full object-cover" alt="Cover" />
+            ) : (
+              <div className="h-full w-full bg-gradient-to-br from-vasta-primary/20 to-vasta-accent/20" />
+            )}
+            <div className="absolute inset-0 bg-black/10" />
+          </div>
+
+          <div className="relative z-10 p-4 flex flex-col items-center pt-20">
+            {/* Avatar */}
+            <div className="h-24 w-24 rounded-full border-4 shadow-xl overflow-hidden shrink-0"
+                  style={{ borderColor: settings.bgColor || (settings.theme === 'light' ? '#FAFAF9' : '#0B0E14') }}
+            >
+              {settings.profileImage ? (
+                <img src={settings.profileImage} className="h-full w-full object-cover" alt="Avatar" />
+              ) : (
+                <div className="flex h-full items-center justify-center bg-gradient-to-tr from-vasta-primary to-vasta-accent">
+                    <span className="text-xl font-bold text-white uppercase">{settings.username.slice(0,2)}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="text-center mt-3 mb-6">
+                <h2 className="text-base font-bold">@{settings.username}</h2>
+                <p className="text-[10px] opacity-60 mt-1 max-w-[200px] leading-relaxed">{settings.bio}</p>
+            </div>
+
+            {/* Links */}
+            <div className="w-full space-y-3">
+              {links.map((link) => (
+                <div 
+                  key={link.id}
+                  className={`flex items-center gap-3 p-3 rounded-2xl transition-all shadow-sm ${
+                    settings.linkStyle === 'glass' 
+                      ? 'bg-white/10 backdrop-blur-md border border-white/20' 
+                      : settings.linkStyle === 'solid'
+                      ? 'text-white border-transparent'
+                      : 'bg-transparent border-2'
+                  }`}
+                  style={{ 
+                    borderColor: (settings.linkStyle === 'outline' || settings.linkStyle === 'glass') ? settings.accentColor : 'transparent',
+                    backgroundColor: settings.linkStyle === 'solid' ? settings.accentColor : undefined,
+                    color: settings.linkStyle === 'solid' ? '#fff' : (settings.linkStyle === 'outline' ? settings.accentColor : 'inherit'),
+                    boxShadow: settings.linkStyle === 'glass' ? `0 0 15px ${settings.accentColor}33` : undefined
+                  }}
+                >
+                    <div className="flex-1 text-center text-xs font-bold truncate px-2">
+                      {link.title}
+                    </div>
+                </div>
+              ))}
+              {links.length === 0 && !loading && (
+                 <div className="text-center py-4 opacity-50 text-[10px] uppercase font-bold tracking-widest">
+                    Sem links
+                 </div>
+              )}
+            </div>
+
+            {/* Store Preview */}
+            {products.length > 0 && (
+              <div className="w-full mt-8">
+                  <h3 className="text-center text-[10px] font-bold uppercase tracking-widest opacity-50 mb-3">Loja</h3>
+                  <div className="grid gap-2">
+                      {products.map(p => (
+                        <div key={p.id} className="p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-lg bg-black/10 dark:bg-white/10 overflow-hidden shrink-0">
+                               {p.image_url && <img src={p.image_url} className="h-full w-full object-cover" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                               <p className="text-[10px] font-bold truncate">{p.title}</p>
+                               <p className="text-[10px] opacity-70">
+                                  {p.price > 0 ? `R$ ${p.price.toFixed(2)}` : 'Grátis'}
+                               </p>
+                            </div>
+                        </div>
+                      ))}
+                  </div>
+              </div>
+            )}
+          </div>
+
+          {/* Notch */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-24 bg-vasta-surface rounded-b-3xl z-50 shadow-inner" />
+      </div>
+    </div>
+  )
+}
+
 

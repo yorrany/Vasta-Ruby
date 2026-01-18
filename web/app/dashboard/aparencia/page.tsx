@@ -15,16 +15,23 @@ import {
   Layout,
   Plus
 } from "lucide-react"
-import { useAppearance, type LinkStyle, type SiteTheme } from "../layout"
+import { createClient } from "../../../lib/supabase"
+import { useAuth } from "../../../lib/AuthContext"
+
+import { useAppearance } from "../layout"
 
 const UNSPLASH_ACCESS_KEY = "Gs8VRjjRzth-J04KlkcfYKViV2lh4Qtj9yyLXFXjme4"
 
 export default function AparenciaPage() {
   const { settings, updateSettings } = useAppearance()
+  const { user } = useAuth()
   const [isUnsplashOpen, setIsUnsplashOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [unsplashResult, setUnsplashResult] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
+  const [uploading, setUploading] = useState(false)
+
+  const supabase = createClient()
 
   const handleUnsplashSearch = async (e?: React.FormEvent) => {
     e?.preventDefault()
@@ -51,12 +58,41 @@ export default function AparenciaPage() {
     }
   }, [isUnsplashOpen])
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'cover') => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'cover') => {
     const file = e.target.files?.[0]
-    if (file) {
-      const url = URL.createObjectURL(file)
-      if (type === 'profile') updateSettings({ profileImage: url })
-      else updateSettings({ coverImage: url })
+    if (!file || !user) return
+
+    if (file.size > 5 * 1024 * 1024) {
+        alert("O arquivo deve ter no máximo 5MB")
+        return
+    }
+
+    setUploading(true)
+    try {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${user.id}/${type}_${Date.now()}.${fileExt}`
+        const filePath = `${fileName}`
+
+        const { error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(filePath, file)
+
+        if (uploadError) throw uploadError
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(filePath)
+
+        if (type === 'profile') {
+            updateSettings({ profileImage: publicUrl })
+        } else {
+            updateSettings({ coverImage: publicUrl })
+        }
+    } catch (error) {
+        console.error('Error uploading image:', error)
+        alert('Erro ao fazer upload da imagem. Verifique se o bucket "avatars" existe e é público.')
+    } finally {
+        setUploading(false)
     }
   }
 
