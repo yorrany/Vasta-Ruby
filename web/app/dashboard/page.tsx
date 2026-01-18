@@ -1,220 +1,303 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { 
   BarChart3, 
   ArrowUpRight, 
   Wallet, 
   Plus, 
   MoreHorizontal, 
-  CheckCircle2, 
   Clock, 
-  AlertCircle 
+  ShoppingBag,
+  TrendingUp,
+  CreditCard,
+  Copy,
+  AlertCircle
 } from "lucide-react"
+import { createClient } from "../../lib/supabase"
+import { useAuth } from "../../lib/AuthContext"
 
 export default function DashboardHome() {
+  const { user } = useAuth()
+  const supabase = createClient()
+  const [loading, setLoading] = useState(true)
+  const [recentOrders, setRecentOrders] = useState<any[]>([])
+  const [weeklyRevenue, setWeeklyRevenue] = useState<any[]>([])
+  const [totalRevenueWeek, setTotalRevenueWeek] = useState(0)
+  
+  // Quick Copied State
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    async function fetchDashboardData() {
+       if (!user) return
+
+       // Fetch recent orders (last 30 days for chart)
+       const thirtyDaysAgo = new Date()
+       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+       const { data: ordersData } = await supabase
+         .from('orders')
+         .select('*, products(title)')
+         .eq('profile_id', user.id)
+         .gte('created_at', thirtyDaysAgo.toISOString())
+         .order('created_at', { ascending: false })
+
+       if (ordersData) {
+          // 1. Recent Orders (Top 4 for compact view)
+          setRecentOrders(ordersData.slice(0, 4))
+
+          // 2. Weekly Revenue Chart (Last 7 days)
+          const last7Days = Array.from({ length: 7 }, (_, i) => {
+             const d = new Date()
+             d.setDate(d.getDate() - (6 - i))
+             return d
+          })
+
+          let weekTotal = 0;
+
+          const chartData = last7Days.map(date => {
+             const dayStr = date.toLocaleDateString('pt-BR', { weekday: 'narrow' }).toUpperCase()
+             const dateStr = date.toISOString().split('T')[0]
+             
+             // Sum revenue for this day
+             const daysOrders = ordersData.filter((o: any) => o.created_at.startsWith(dateStr) && o.status === 'paid')
+             const dailyVal = daysOrders.reduce((acc: number, o: any) => acc + (o.amount || 0), 0)
+             
+             weekTotal += dailyVal;
+
+             // Determine if it's the "active" highlight day (today)
+             const isToday = date.getDate() === new Date().getDate()
+
+             return {
+                day: dayStr,
+                val: dailyVal,
+                active: isToday,
+                price: `R$ ${dailyVal.toFixed(0)}` 
+             }
+          })
+          
+          setTotalRevenueWeek(weekTotal)
+
+          // Normalize values for bar height (max 100%)
+          const maxVal = Math.max(...chartData.map(d => d.val)) || 1
+          const normalizedChartData = chartData.map(d => ({
+             ...d,
+             heightPct: (d.val / maxVal) * 100
+          }))
+
+          setWeeklyRevenue(normalizedChartData)
+       }
+       setLoading(false)
+    }
+
+    fetchDashboardData()
+  }, [user])
+
+  const copyLink = () => {
+      // Mock copy for now, or use actual profile link if available globally
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+  }
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500">
       
-      {/* Top Section: Income Tracker & Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Top Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         
-        {/* Income Tracker Chart Card */}
-        <div className="lg:col-span-2 rounded-[2.5rem] bg-vasta-surface p-8 shadow-sm border border-vasta-border relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-8">
-             <div className="flex items-center gap-3">
-                <div className="p-3 bg-vasta-surface-soft rounded-2xl">
-                   <Wallet className="w-6 h-6 text-vasta-text" />
+        {/* Main Chart Card */}
+        <div className="xl:col-span-2 rounded-[2rem] bg-vasta-surface p-6 sm:p-8 shadow-sm border border-vasta-border relative overflow-hidden flex flex-col justify-between min-h-[320px]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 relative z-10">
+             <div>
+                <div className="flex items-center gap-2 text-vasta-muted mb-1">
+                   <Wallet className="w-4 h-4" />
+                   <span className="text-xs font-bold uppercase tracking-wider">Faturamento (7 dias)</span>
                 </div>
-                <div>
-                   <h2 className="text-xl font-bold text-vasta-text">Vendas da Semana</h2>
-                   <p className="text-xs text-vasta-muted">Acompanhe seu rendimento</p>
-                </div>
+                <h2 className="text-3xl sm:text-4xl font-black text-vasta-text tracking-tight">
+                    R$ {loading ? '...' : totalRevenueWeek.toFixed(2).replace('.', ',')}
+                </h2>
              </div>
+             
              <div className="flex gap-2">
-                <button className="px-4 py-2 rounded-xl bg-vasta-surface-soft text-xs font-bold text-vasta-text hover:bg-vasta-border transition-colors">
-                  Semana
-                </button>
+                <div className="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs font-bold flex items-center gap-1.5 border border-emerald-500/20">
+                  <TrendingUp size={14} />
+                  <span>+0% esta semana</span>
+                </div>
              </div>
           </div>
 
-          <div className="flex items-end justify-between h-48 gap-2 md:gap-4 px-2">
-             {[
-               { day: 'D', val: 30, active: false },
-               { day: 'S', val: 45, active: false },
-               { day: 'T', val: 75, active: true, price: 'R$ 2.567' },
-               { day: 'Q', val: 50, active: false },
-               { day: 'Q', val: 60, active: false },
-               { day: 'S', val: 40, active: false },
-               { day: 'S', val: 35, active: false },
-             ].map((item, idx) => (
-                <div key={idx} className="flex flex-col items-center gap-3 flex-1 group/bar cursor-pointer">
-                   {item.active && (
-                      <div className="mb-2 px-3 py-1.5 bg-vasta-text text-vasta-bg text-xs font-bold rounded-xl animate-in fade-in slide-in-from-bottom-2">
-                        {item.price}
-                      </div>
-                   )}
+          <div className="flex items-end justify-between h-40 sm:h-48 gap-3 sm:gap-6 relative z-10">
+             {loading ? (
+                <div className="w-full h-full flex items-center justify-center text-vasta-muted text-xs animate-pulse">Carregando dados...</div>
+             ) : weeklyRevenue.length > 0 ? weeklyRevenue.map((item, idx) => (
+                <div key={idx} className="flex flex-col items-center gap-3 flex-1 group/bar cursor-default">
+                   {/* Tooltip on Hover */}
+                   <div className="opacity-0 group-hover/bar:opacity-100 transition-opacity absolute -top-8 bg-vasta-text text-vasta-bg text-[10px] font-bold px-2 py-1 rounded-lg pointer-events-none whitespace-nowrap z-20">
+                      {item.price}
+                   </div>
+
                    <div 
-                      className={`w-2 md:w-3 rounded-full transition-all duration-500 relative ${item.active ? 'bg-vasta-text h-32' : 'bg-vasta-border/50 hover:bg-vasta-primary/50 h-20'}`}
-                      style={{ height: `${item.active ? 100 : item.val}%` }}
+                      className={`w-full max-w-[40px] rounded-t-xl sm:rounded-2xl transition-all duration-700 ease-out relative overflow-hidden ${
+                          item.active 
+                            ? 'bg-vasta-text shadow-lg shadow-vasta-text/20' 
+                            : 'bg-vasta-surface-soft hover:bg-vasta-primary/60'
+                      }`}
+                      style={{ height: item.val === 0 ? '8px' : `${Math.max(item.heightPct, 10)}%` }} 
                    >
                        {item.active && (
-                          <div className="absolute inset-0 bg-white/20 blur-sm animate-pulse" />
+                          <div className="absolute inset-0 bg-white/20 blur-md animate-pulse" />
                        )}
                    </div>
-                   <span className={`text-xs font-bold ${item.active ? 'text-vasta-text px-3 py-1 bg-vasta-text/5 rounded-lg' : 'text-vasta-muted'}`}>
+                   <span className={`text-[10px] sm:text-xs font-bold ${item.active ? 'text-vasta-text' : 'text-vasta-muted'}`}>
                      {item.day}
                    </span>
                 </div>
-             ))}
+             )) : (
+                <div className="w-full text-center text-xs text-vasta-muted flex flex-col items-center justify-center h-full border-2 border-dashed border-vasta-border rounded-xl">
+                    <BarChart3 className="mb-2 opacity-50" />
+                    Sem dados de vendas
+                </div>
+             )}
           </div>
-
-          <div className="mt-8 flex items-end gap-2">
-             <h3 className="text-4xl font-black text-vasta-text tracking-tight">+20%</h3>
-             <p className="text-sm text-vasta-muted mb-1.5 font-medium">vs. semana passada</p>
+          
+          {/* Background Decor */}
+          <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+              <Wallet className="w-64 h-64 rotate-[-15deg] translate-x-12 -translate-y-12" />
           </div>
         </div>
 
-        {/* Right Column: Recent Projects / Activity */}
-        <div className="space-y-6">
-           <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-vasta-text">Vendas Recentes</h3>
-              <button className="text-xs font-bold text-vasta-muted hover:text-vasta-primary transition-colors underline decoration-dotted">Ver tudo</button>
-           </div>
-
-           <div className="space-y-3">
-              {[
-                { title: "E-book Design System", amount: "R$ 49,90", status: "Pago", time: "2h atrás", type: "digital" },
-                { title: "Mentoria 1h", amount: "R$ 150,00", status: "Pendente", time: "5h atrás", type: "service" },
-                { title: "Pack Presets", amount: "R$ 29,90", status: "Pago", time: "1d atrás", type: "digital" },
-              ].map((item, i) => (
-                 <div key={i} className="group p-4 rounded-[1.5rem] bg-vasta-surface border border-vasta-border hover:border-vasta-primary/30 transition-all hover:shadow-lg hover:shadow-vasta-primary/5 cursor-pointer">
-                    <div className="flex justify-between items-start mb-2">
-                       <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-xl ${item.type === 'digital' ? 'bg-orange-500/10 text-orange-500' : 'bg-blue-500/10 text-blue-500'}`}>
-                             {item.type === 'digital' ? <Wallet size={16} /> : <Clock size={16} />}
-                          </div>
-                          <div>
-                             <h4 className="font-bold text-sm text-vasta-text">{item.title}</h4>
-                             <p className="text-xs text-vasta-primary font-semibold">{item.amount}</p>
-                          </div>
-                       </div>
-                       <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${item.status === 'Pago' ? 'bg-vasta-text text-vasta-bg' : 'bg-vasta-surface-soft text-vasta-muted'}`}>
-                          {item.status}
-                       </span>
-                    </div>
-                    <div className="flex items-center justify-between mt-3 pl-11">
-                       <div className="flex gap-2">
-                          <span className="text-[10px] font-medium bg-vasta-surface-soft px-2 py-0.5 rounded-md text-vasta-muted">Automático</span>
-                       </div>
-                       <span className="text-[10px] text-vasta-muted flex items-center gap-1">
-                          <Clock size={10} /> {item.time}
-                       </span>
-                    </div>
-                 </div>
-              ))}
-           </div>
-        </div>
-      </div>
-
-      {/* Bottom Section: Connect & Premium Banner */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-         
-         {/* Left: Quick Actions / Connect */}
-         <div className="bg-vasta-surface p-6 rounded-[2rem] border border-vasta-border">
-            <div className="flex items-center justify-between mb-6">
-               <h3 className="font-bold text-vasta-text">Ações Rápidas</h3>
-               <button className="text-xs text-vasta-muted hover:text-vasta-text">Editar</button>
-            </div>
+        {/* Right Column: Key Actions & Premium */}
+        <div className="space-y-6 flex flex-col">
             
-            <div className="space-y-4">
-               <div className="flex items-center justify-between p-3 rounded-2xl bg-vasta-surface-soft/50 border border-vasta-border hover:bg-vasta-surface-soft transition-colors cursor-pointer group">
-                  <div className="flex items-center gap-3">
-                     <div className="h-10 w-10 rounded-full bg-vasta-surface border flex items-center justify-center shadow-sm">
-                        <Plus size={18} className="text-vasta-text group-hover:scale-110 transition-transform" />
-                     </div>
-                     <div>
-                        <p className="text-sm font-bold text-vasta-text">Novo Produto</p>
-                        <p className="text-[10px] text-vasta-muted">Digital ou Físico</p>
-                     </div>
-                  </div>
-                  <div className="h-8 w-8 rounded-full border border-vasta-border flex items-center justify-center bg-vasta-bg group-hover:bg-white group-hover:dark:bg-black transition-colors">
-                     <ArrowUpRight size={14} className="text-vasta-muted" />
-                  </div>
-               </div>
-
-               <div className="flex items-center justify-between p-3 rounded-2xl bg-vasta-surface-soft/50 border border-vasta-border hover:bg-vasta-surface-soft transition-colors cursor-pointer group">
-                  <div className="flex items-center gap-3">
-                     <div className="h-10 w-10 rounded-full bg-vasta-surface border flex items-center justify-center shadow-sm">
-                        <MoreHorizontal size={18} className="text-vasta-text group-hover:scale-110 transition-transform" />
-                     </div>
-                     <div>
-                        <p className="text-sm font-bold text-vasta-text">Personalizar Link</p>
-                        <p className="text-[10px] text-vasta-muted">Aparência e temas</p>
-                     </div>
-                  </div>
-                  <div className="h-8 w-8 rounded-full border border-vasta-border flex items-center justify-center bg-vasta-bg group-hover:bg-white group-hover:dark:bg-black transition-colors">
-                     <ArrowUpRight size={14} className="text-vasta-muted" />
-                  </div>
-               </div>
-            </div>
-         </div>
-
-         {/* Middle: Premium Banner */}
-         <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-vasta-text to-stone-800 p-8 text-vasta-bg shadow-lg flex flex-col justify-between group">
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay"></div>
-            <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-vasta-primary/30 blur-3xl group-hover:bg-vasta-primary/50 transition-colors duration-700"></div>
-            
-            <div className="relative z-10">
-               <h3 className="text-2xl font-black tracking-tight mb-2">Vasta Premium</h3>
-               <p className="text-vasta-bg/70 text-sm max-w-[200px]">Desbloqueie taxas menores, domínio próprio e temas exclusivos.</p>
-            </div>
-
-            <div className="relative z-10 mt-6">
-               <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-vasta-bg text-vasta-text font-bold text-sm shadow-xl hover:scale-105 transition-transform">
-                  Fazer Upgrade
-                  <ArrowUpRight size={16} />
+            {/* Action Cards */}
+            <div className="grid grid-cols-2 gap-4">
+               <a href="/dashboard/minha-loja" className="bg-vasta-surface p-5 rounded-[1.5rem] border border-vasta-border hover:border-vasta-primary/50 hover:shadow-lg hover:shadow-vasta-primary/5 transition-all group flex flex-col justify-between aspect-square">
+                   <div className="h-10 w-10 rounded-full bg-vasta-surface-soft flex items-center justify-center group-hover:bg-vasta-primary/10 group-hover:text-vasta-primary transition-colors">
+                       <Plus size={20} />
+                   </div>
+                   <div>
+                       <p className="font-bold text-sm text-vasta-text leading-tight">Novo Produto</p>
+                       <p className="text-[10px] text-vasta-muted mt-1 group-hover:text-vasta-primary/80">Adicionar item</p>
+                   </div>
+               </a>
+               
+               <button onClick={copyLink} className="bg-vasta-surface p-5 rounded-[1.5rem] border border-vasta-border hover:border-vasta-accent/50 hover:shadow-lg hover:shadow-vasta-accent/5 transition-all group flex flex-col justify-between aspect-square relative overflow-hidden">
+                   <div className="h-10 w-10 rounded-full bg-vasta-surface-soft flex items-center justify-center group-hover:bg-vasta-accent/10 group-hover:text-vasta-accent transition-colors">
+                       <Copy size={18} />
+                   </div>
+                   <div>
+                       <p className="font-bold text-sm text-vasta-text leading-tight">{copied ? 'Copiado!' : 'Copiar Link'}</p>
+                       <p className="text-[10px] text-vasta-muted mt-1 group-hover:text-vasta-accent/80">Compartilhar perfil</p>
+                   </div>
+                   {copied && <div className="absolute inset-0 bg-emerald-500/10 animate-pulse" />}
                </button>
             </div>
-         </div>
 
-         {/* Right: Pipeline Stats */}
-         <div className="bg-vasta-surface p-6 rounded-[2rem] border border-vasta-border">
-            <div className="flex items-center justify-between mb-6">
-               <h3 className="font-bold text-vasta-text">Funil de Vendas</h3>
-               <span className="text-xs text-vasta-muted">30 dias</span>
+            {/* Premium Banner (Compact) */}
+            <div className="flex-1 relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-stone-900 via-stone-800 to-black p-6 text-white shadow-xl flex flex-col justify-center gap-4 group">
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-30 mix-blend-overlay"></div>
+                <div className="absolute right-0 top-0 w-32 h-32 bg-vasta-primary/40 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-vasta-primary/60 transition-colors"></div>
+                
+                <div className="relative z-10">
+                    <div className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-white/20 border border-white/10 mb-2 backdrop-blur-sm">PRO</div>
+                    <h3 className="text-xl font-bold leading-tight">Desbloqueie todo o poder.</h3>
+                    <p className="text-xs text-gray-400 mt-2 line-clamp-2">Taxas menores, domínio personalizado e temas exclusivos.</p>
+                </div>
+                <a href="/dashboard/billing" className="relative z-10 w-fit px-5 py-2.5 rounded-xl bg-white text-black text-xs font-bold hover:scale-105 transition-transform shadow-lg shadow-white/10">
+                    Ver Planos
+                </a>
             </div>
-
-            <div className="space-y-6">
-               <div className="flex justify-between items-end">
-                  <div>
-                     <p className="text-xs text-vasta-muted mb-1">Visitantes</p>
-                     <p className="text-2xl font-bold text-vasta-text">1.2k</p>
-                  </div>
-                  <div className="h-8 w-[1px] bg-vasta-border"></div>
-                  <div>
-                     <p className="text-xs text-vasta-muted mb-1">Cliques</p>
-                     <p className="text-2xl font-bold text-vasta-text">840</p>
-                  </div>
-                  <div className="h-8 w-[1px] bg-vasta-border"></div>
-                  <div>
-                     <p className="text-xs text-vasta-muted mb-1">Vendas</p>
-                     <p className="text-2xl font-bold text-vasta-text">42</p>
-                  </div>
-               </div>
-
-               <div className="pt-4 flex items-end justify-between gap-1 h-12">
-                   {[...Array(20)].map((_, i) => (
-                      <div 
-                        key={i} 
-                        className={`w-1 rounded-full ${i > 14 ? 'bg-vasta-text' : (i > 8 ? 'bg-orange-500' : 'bg-vasta-border')}`}
-                        style={{ height: `${Math.random() * 100}%`}}
-                      />
-                   ))}
-               </div>
-            </div>
-         </div>
-
+        </div>
       </div>
+
+      {/* Bottom Grid: Recent Sales & Funnel */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* Recent Sales - Condensed */}
+          <div className="bg-vasta-surface rounded-[2rem] border border-vasta-border p-6 sm:p-8">
+              <div className="flex items-center justify-between mb-6">
+                 <h3 className="font-bold text-lg text-vasta-text">Vendas Recentes</h3>
+                 <a href="/dashboard/vendas" className="text-xs font-bold text-vasta-primary hover:text-vasta-primary/80 bg-vasta-primary/5 px-3 py-1.5 rounded-full transition-colors">
+                    Ver todas
+                 </a>
+              </div>
+              
+              <div className="space-y-2">
+                  {loading ? (
+                     <div className="h-24 rounded-2xl bg-vasta-surface-soft animate-pulse" />
+                  ) : recentOrders.length > 0 ? recentOrders.map((item, i) => (
+                     <div key={i} className="group flex items-center justify-between p-3 rounded-2xl hover:bg-vasta-surface-soft transition-colors border border-transparent hover:border-vasta-border/50">
+                        <div className="flex items-center gap-3 min-w-0">
+                           <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                              item.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'
+                           }`}>
+                               <ShoppingBag size={18} />
+                           </div>
+                           <div className="min-w-0">
+                              <p className="font-bold text-sm text-vasta-text truncate pr-2">{item.products?.title || 'Produto Indisponível'}</p>
+                              <p className="text-[10px] text-vasta-muted">{new Date(item.created_at).toLocaleDateString('pt-BR')} • {item.buyer_email ? item.buyer_email.split('@')[0] : 'Anônimo'}</p>
+                           </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                           <p className="font-bold text-sm text-vasta-text">R$ {item.amount.toFixed(2).replace('.', ',')}</p>
+                           <p className={`text-[10px] font-bold uppercase ${item.status === 'paid' ? 'text-emerald-500' : 'text-amber-500'}`}>
+                              {item.status === 'paid' ? 'Pago' : item.status}
+                           </p>
+                        </div>
+                     </div>
+                  )) : (
+                     <div className="py-8 text-center bg-vasta-surface-soft/30 rounded-2xl border border-dashed border-vasta-border">
+                        <ShoppingBag className="mx-auto h-8 w-8 text-vasta-muted/50 mb-2" />
+                        <p className="text-sm font-bold text-vasta-text">Nenhuma venda</p>
+                        <p className="text-[10px] text-vasta-muted">Compartilhe seu link para começar!</p>
+                     </div>
+                  )}
+              </div>
+          </div>
+
+          {/* Funnel - Improved Visuals */}
+          <div className="bg-vasta-surface rounded-[2rem] border border-vasta-border p-6 sm:p-8 flex flex-col">
+              <div className="flex items-center justify-between mb-8">
+                 <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-lg text-vasta-text">Funil de Conversão</h3>
+                    <span className="bg-vasta-surface-soft text-[10px] font-bold px-2 py-0.5 rounded text-vasta-muted border border-vasta-border">07 dias</span>
+                 </div>
+                 <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" title="Tracking Ativo" />
+              </div>
+
+              <div className="flex-1 grid grid-cols-3 gap-2 relative">
+                  {/* Connector Line */}
+                  <div className="absolute top-1/2 left-0 right-0 h-1 bg-vasta-surface-soft -translate-y-1/2 rounded-full z-0" />
+
+                  {/* Steps */}
+                  {[
+                      { label: "Visitas", val: "--", icon: Wallet /* Placeholder icon, clearly not correct but visually ok for now */, color: "bg-blue-500" },
+                      { label: "Cliques", val: "--", icon:  ArrowUpRight, color: "bg-purple-500" },
+                      { label: "Vendas", val: recentOrders.length, icon: CreditCard, color: "bg-emerald-500" }
+                  ].map((step, idx) => (
+                      <div key={idx} className="relative z-10 bg-vasta-surface border border-vasta-border hover:border-vasta-primary/50 transition-colors p-4 rounded-2xl text-center flex flex-col items-center justify-center gap-2 shadow-sm">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-vasta-muted">{step.label}</p>
+                          <p className="text-2xl font-black text-vasta-text">{step.val}</p>
+                          <div className={`h-1 w-8 rounded-full ${step.color} opacity-50`} />
+                      </div>
+                  ))}
+              </div>
+
+              <div className="mt-8 bg-vasta-surface-soft/50 rounded-xl p-3 flex items-start gap-3 border border-vasta-border/50">
+                  <div className="p-1.5 bg-orange-500/10 text-orange-500 rounded-lg shrink-0">
+                      <AlertCircle size={14} />
+                  </div>
+                  <div>
+                      <p className="text-xs font-bold text-vasta-text">Analytics em calibração</p>
+                      <p className="text-[10px] text-vasta-muted leading-tight mt-0.5">
+                          Estamos coletando dados iniciais do seu perfil. Métricas de visitas e cliques aparecerão em breve.
+                      </p>
+                  </div>
+              </div>
+          </div>
+      </div>
+
     </div>
   )
 }

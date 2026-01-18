@@ -1,10 +1,23 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
-export function createClient() {
-  const url = "https://pmecrhlmynkpptpjiuhx.supabase.co";
-  const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtZWNyaGxteW5rcHB0cGppdWh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg0NTMwMjYsImV4cCI6MjA4NDAyOTAyNn0._mRzOK8UX1y5wccNNucvztJtlT0c0cMirwhGWEJvlDs";
+// Security: Use environment variables instead of hardcoded values
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  return createSupabaseClient(url, key, {
+// Validate at runtime - fail fast if misconfigured
+if (!url || !key) {
+  throw new Error(
+    "[Security] Missing Supabase environment variables. " +
+    "Ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set."
+  );
+}
+
+let client: ReturnType<typeof createSupabaseClient> | undefined;
+
+export function createClient() {
+  if (client) return client;
+
+  client = createSupabaseClient(url, key, {
     auth: {
       persistSession: true,
       storageKey: 'vasta-auth-token',
@@ -14,4 +27,6 @@ export function createClient() {
       autoRefreshToken: true,
     }
   });
+
+  return client;
 }

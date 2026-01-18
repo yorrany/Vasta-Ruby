@@ -1,8 +1,0 @@
-{
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "https://vasta-ruby-antigravity.onrender.com/$1"
-    }
-  ]
-}

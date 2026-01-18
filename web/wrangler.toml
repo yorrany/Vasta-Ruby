@@ -3,6 +3,36 @@ pages_build_output_dir = "out"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
+# ============================================
+# 🔐 ENVIRONMENT VARIABLES
+# ============================================
+# Public variables (safe to commit)
+[vars]
+NEXT_PUBLIC_API_URL = "https://vasta.pro"
+NEXT_PUBLIC_SUPABASE_URL = "https://pmecrhlmynkpptpjiuhx.supabase.co"
+# Note: NEXT_PUBLIC_* vars are inlined at build time by Next.js
+
+# ============================================
+# 🔒 SECRETS (Configure via Cloudflare Dashboard or CLI)
+# ============================================
+# These must be set via:
+#   - Dashboard: Workers & Pages → vasta-web → Settings → Environment Variables → Add secret
+#   - CLI: npx wrangler pages secret put <SECRET_NAME>
+#
+# Required secrets:
+#   - NEXT_PUBLIC_SUPABASE_ANON_KEY
+#   - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+#   - NEXT_PUBLIC_STRIPE_PRICE_PRO
+#   - NEXT_PUBLIC_STRIPE_PRICE_PRO_YEARLY
+#   - NEXT_PUBLIC_STRIPE_PRICE_BUSINESS
+#   - NEXT_PUBLIC_STRIPE_PRICE_BUSINESS_YEARLY
+#
+# Backend-only secrets (if using Cloudflare Functions):
+#   - SUPABASE_SERVICE_ROLE_KEY (never expose to frontend!)
+#   - STRIPE_SECRET_KEY (never expose to frontend!)
+#   - STRIPE_WEBHOOK_SECRET
+
 # [[kv_namespaces]]
 # binding = "NEXT_CACHE_WORKERS_KV"
 # id = "please_replace_with_your_kv_id"
+
