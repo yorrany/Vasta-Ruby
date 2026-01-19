@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createClient } from '../../../lib/supabase';
+import { createClient } from "../../../lib/supabase/client";
 
 export const dynamic = 'force-dynamic';
 

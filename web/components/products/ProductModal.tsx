@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react"
 import { X, Loader2, Save, Upload, Image as ImageIcon, DollarSign, Type } from "lucide-react"
-import { createClient } from "../../lib/supabase"
+import { createClient } from "../../lib/supabase/client"
 import { useAuth } from "../../lib/AuthContext"
 
 type Product = {

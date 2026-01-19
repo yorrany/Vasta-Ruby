@@ -10,7 +10,8 @@ var config = {
       incrementalCache: "dummy",
       tagCache: "dummy",
       queue: "dummy"
-    }
+    },
+    minify: false
   },
   edgeExternals: ["node:crypto"],
   middleware: {

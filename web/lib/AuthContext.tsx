@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react"
 
 import { type User } from "@supabase/supabase-js"
-import { createClient } from "./supabase"
+import { createClient } from "./supabase/client"
 
 type AuthModalMode = 'login' | 'signup'
 

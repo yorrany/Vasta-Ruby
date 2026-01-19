@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { createClient } from "../../lib/supabase"
+import { createClient } from "../../lib/supabase/client"
 import { Loader2, ExternalLink } from "lucide-react"
 
 type LinkStyle = 'glass' | 'solid' | 'outline'

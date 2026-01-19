@@ -20,7 +20,7 @@ import {
   ChevronsUpDown,
   Sparkles
 } from "lucide-react"
-import { createClient } from "../../lib/supabase"
+import { createClient } from "../../lib/supabase/client"
 import { useAuth } from "../../lib/AuthContext"
 
 // Types for Appearance

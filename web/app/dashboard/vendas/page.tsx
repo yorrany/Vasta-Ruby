@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { DollarSign, ShoppingBag, Users, TrendingUp, Search, Loader2 } from "lucide-react"
-import { createClient } from "../../../lib/supabase"
+import { createClient } from "../../../lib/supabase/client"
 import { useAuth } from "../../../lib/AuthContext"
 
 type Order = {

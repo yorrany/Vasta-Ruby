@@ -19,7 +19,7 @@ import {
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { GripVertical, Plus, Loader2 } from "lucide-react"
-import { createClient } from "../../../lib/supabase"
+import { createClient } from "../../../lib/supabase/client"
 import { useAuth } from "../../../lib/AuthContext"
 import { LinkModal } from "../../../components/links/LinkModal"
 

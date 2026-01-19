@@ -13,7 +13,7 @@ import {
   ArrowRight,
   LayoutDashboard
 } from "lucide-react"
-import { createClient } from "../lib/supabase"
+import { createClient } from "../lib/supabase/client"
 import { useAuth } from "../lib/AuthContext"
 import { ThemeToggle } from "./ThemeToggle"
 

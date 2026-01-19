@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Package, Plus, Loader2, Edit, Share2 } from "lucide-react"
-import { createClient } from "../../../lib/supabase"
+import { createClient } from "../../../lib/supabase/client"
 import { useAuth } from "../../../lib/AuthContext"
 import { ProductModal } from "../../../components/products/ProductModal"
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { X, Loader2, Save, Trash2 } from "lucide-react"
-import { createClient } from "../../lib/supabase"
+import { createClient } from "../../lib/supabase/client"
 import { useAuth } from "../../lib/AuthContext"
 
 type LinkItem = {

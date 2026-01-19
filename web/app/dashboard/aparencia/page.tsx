@@ -18,7 +18,7 @@ import {
   Plus,
   Lock,
 } from "lucide-react";
-import { createClient } from "../../../lib/supabase";
+import { createClient } from "../../../lib/supabase/client";
 import { useAuth } from "../../../lib/AuthContext";
 
 import { useAppearance, useConfirm } from "../layout";
