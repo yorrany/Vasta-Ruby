@@ -18,8 +18,11 @@ import {
   CreditCard,
   LogOut,
   ChevronsUpDown,
-  Sparkles
+  Sparkles,
+  Share2,
+  QrCode
 } from "lucide-react"
+import { QRCodeSVG } from "qrcode.react"
 import { createClient } from "../../lib/supabase/client"
 import { useAuth } from "../../lib/AuthContext"
 
@@ -116,6 +119,7 @@ export default function DashboardLayout({ children }: Props) {
   const router = useRouter() // Import useRouter from next/navigation
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   // Dialog State (Moved up)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -174,14 +178,17 @@ export default function DashboardLayout({ children }: Props) {
           typography: data.typography || "Inter",
           linkStyle: (data.link_style as LinkStyle) || "glass",
           theme: (data.theme as SiteTheme) || "adaptive",
-          username: data.username || "seunome",
+          username: data.username || user.user_metadata?.username || user.email?.split('@')[0] || "seunome",
           bio: data.bio || "",
           backgroundImage: data.background_image || null,
           backgroundImageCredit: data.background_image_credit || null
         })
       } else {
         console.warn("No profile found for user, using defaults.")
-        // Ideally we might want to trigger profile creation here if it's missing
+        setSettings({
+          ...defaultSettings,
+          username: user.user_metadata?.username || user.email?.split('@')[0] || "seunome"
+        })
       }
     }
     fetchProfile()
@@ -287,9 +294,9 @@ export default function DashboardLayout({ children }: Props) {
                 }`}
             >
               <div className="flex items-center justify-between px-4 py-4">
-                <Link href="/dashboard" className="flex items-center justify-start">
-                  <img src="/logo.svg" alt="Vasta Logo" className="w-32 h-auto dark:hidden" />
-                  <img src="/logo_branca.svg" alt="Vasta Logo" className="w-32 h-auto hidden dark:block" />
+                <Link href="/dashboard" className="w-full">
+                  <img src="/logo.svg" alt="Vasta Logo" className="w-full h-auto dark:hidden" />
+                  <img src="/logo_branca.svg" alt="Vasta Logo" className="w-full h-auto hidden dark:block" />
                 </Link>
                 <button
                   className="text-vasta-muted hover:text-vasta-text md:hidden"
@@ -300,26 +307,78 @@ export default function DashboardLayout({ children }: Props) {
               </div>
 
               <div className="px-4">
-                <div className="rounded-2xl bg-vasta-surface-soft p-4 text-xs border border-vasta-border/50">
-                  <div className="text-vasta-muted font-medium">Seu link</div>
-                  <div className="mt-1 text-sm font-bold text-vasta-text">@{settings.username}</div>
-                  <a
-                    href={`/${settings.username}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 block text-center w-full rounded-full bg-vasta-bg border border-vasta-border py-1.5 text-xs font-medium text-vasta-text hover:bg-vasta-border/50 transition-colors"
-                  >
-                    Ver página pública
-                  </a>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(`https://vasta.pro/${settings.username}`)
-                      // Ideally show a toast here
-                    }}
-                    className="mt-2 w-full rounded-full bg-gradient-to-r from-vasta-primary to-vasta-accent py-1.5 text-xs font-bold text-white shadow-md shadow-vasta-primary/20 hover:shadow-lg transition-all"
-                  >
-                    Copiar link
-                  </button>
+                <div className="rounded-[2rem] bg-vasta-surface-soft p-5 border border-vasta-border/50 shadow-sm relative overflow-hidden group">
+                  {/* Background Glow */}
+                  <div className="absolute top-0 right-0 w-16 h-16 bg-vasta-primary/5 blur-2xl rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-vasta-primary/10 transition-colors" />
+
+                  <div className="flex flex-col gap-4 mb-4">
+                    <div className="min-w-0">
+                      <div className="text-[10px] font-bold text-vasta-muted uppercase tracking-widest">Link Vasta</div>
+                      <div className="mt-1 text-sm font-black text-vasta-text truncate">@{settings.username}</div>
+                    </div>
+                    <div className="w-full p-2.5 rounded-2xl bg-white border border-vasta-border flex items-center justify-center shadow-lg shadow-black/5 shrink-0 overflow-hidden">
+                      <QRCodeSVG
+                        value={`https://vasta.pro/${settings.username}`}
+                        size={256}
+                        style={{ width: '100%', height: 'auto' }}
+                        bgColor="#FFFFFF"
+                        fgColor="#000000"
+                        className="text-black"
+                        level="L"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <a
+                        href={`/${settings.username}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 rounded-xl bg-vasta-surface border border-vasta-border py-2 text-[11px] font-bold text-vasta-text hover:bg-vasta-border/30 transition-all border-b-2 border-b-vasta-border active:border-b-0 active:translate-y-[2px]"
+                      >
+                        <ArrowUpRight size={14} className="text-vasta-muted" />
+                        <span>Abrir</span>
+                      </a>
+                      <button
+                        onClick={() => {
+                          const url = `https://vasta.pro/${settings.username}`;
+                          if (navigator.share) {
+                            navigator.share({
+                              title: `Vasta | @${settings.username}`,
+                              text: `Confira meu perfil no Vasta!`,
+                              url: url,
+                            }).catch(console.error);
+                          } else {
+                            navigator.clipboard.writeText(url);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
+                          }
+                        }}
+                        className={`flex items-center justify-center gap-2 rounded-xl border py-2 text-[11px] font-bold transition-all border-b-2 active:border-b-0 active:translate-y-[2px] ${copied
+                          ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-500 border-b-emerald-500/50"
+                          : "bg-vasta-surface border-vasta-border text-vasta-text hover:bg-vasta-border/30 border-b-vasta-border"
+                          }`}
+                      >
+                        <Share2 size={14} className={copied ? "text-emerald-500" : "text-vasta-muted"} />
+                        <span>{copied ? 'Copiado' : (typeof navigator !== 'undefined' && navigator.share ? 'Enviar' : 'Copiar')}</span>
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(`https://vasta.pro/${settings.username}`);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      className={`group/btn w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-[11px] font-bold transition-all ${copied
+                        ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                        : "bg-vasta-text text-vasta-bg shadow-lg shadow-vasta-text/10 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+                        }`}
+                    >
+                      <span>{copied ? 'Link copiado com sucesso!' : 'Copiar link público'}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
               <nav className="mt-6 flex flex-1 flex-col gap-1 px-4 text-sm">

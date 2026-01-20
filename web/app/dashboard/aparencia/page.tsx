@@ -48,10 +48,10 @@ export default function AparenciaPage() {
   const [checking, setChecking] = useState(false);
 
   useEffect(() => {
-    if (settings.username && usernameInput === "") {
+    if (settings.username && (usernameInput === "" || isUsernameLocked)) {
       setUsernameInput(settings.username);
     }
-  }, [settings.username]);
+  }, [settings.username, isUsernameLocked]);
 
   useEffect(() => {
     if (
@@ -293,7 +293,7 @@ export default function AparenciaPage() {
           typography: "Inter",
           linkStyle: "glass",
           theme: "adaptive",
-          username: "seunome",
+          username: settings.username || "seunome",
           bio: "Sua bio inspiradora",
         });
       },
