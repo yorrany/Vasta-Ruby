@@ -9,7 +9,8 @@ import {
 import { X } from 'lucide-react'
 
 // Initialize Stripe outside to avoid recreation
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 type Props = {
   clientSecret: string
@@ -30,14 +31,20 @@ export function CheckoutModal({ clientSecret, onClose }: Props) {
         >
           <X className="h-5 w-5" />
         </button>
-        
+
         <div id="checkout" className="p-1">
-          <EmbeddedCheckoutProvider
-            stripe={stripePromise}
-            options={{ clientSecret }}
-          >
-            <EmbeddedCheckout />
-          </EmbeddedCheckoutProvider>
+          {stripePromise ? (
+            <EmbeddedCheckoutProvider
+              stripe={stripePromise}
+              options={{ clientSecret }}
+            >
+              <EmbeddedCheckout />
+            </EmbeddedCheckoutProvider>
+          ) : (
+            <div className="p-8 text-center text-red-500">
+              Erro: Chave pública do Stripe não configurada.
+            </div>
+          )}
         </div>
       </div>
     </div>
