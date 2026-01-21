@@ -84,7 +84,6 @@ export function Hero() {
     "https://images.unsplash.com/photo-1626785774573-4b799314346d?w=400&h=400&fit=crop"
   );
   const [product2Image, setProduct2Image] = useState(
-  const [product2Image, setProduct2Image] = useState(
     "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&h=400&fit=crop"
   );
   const [currentTime, setCurrentTime] = useState("9:41");
@@ -220,10 +219,10 @@ export function Hero() {
           <div className="flex flex-col gap-4 sm:mx-auto sm:max-w-md md:mx-0 animate-fade-in-up delay-200 fill-mode-forwards opacity-0">
             <div
               className={`group flex items-center gap-1 rounded-[2.5rem] border p-1 transition-all duration-300 shadow-lg hover:shadow-xl ${availability?.available
-                  ? "border-emerald-500/50 bg-emerald-500/5 ring-4 ring-emerald-500/10"
-                  : availability?.available === false
-                    ? "border-red-500/50 bg-red-500/5 ring-4 ring-red-500/10"
-                    : "border-vasta-border bg-vasta-surface-soft/80 ring-4 ring-vasta-border/20"
+                ? "border-emerald-500/50 bg-emerald-500/5 ring-4 ring-emerald-500/10"
+                : availability?.available === false
+                  ? "border-red-500/50 bg-red-500/5 ring-4 ring-red-500/10"
+                  : "border-vasta-border bg-vasta-surface-soft/80 ring-4 ring-vasta-border/20"
                 }`}
             >
               <div className="flex flex-1 items-center pl-3 pr-1 py-1 min-w-0">
@@ -246,8 +245,8 @@ export function Hero() {
               <button
                 onClick={() => openAuthModal('signup', username ? `Criar minha conta como ${username}` : undefined)}
                 className={`flex shrink-0 items-center justify-center gap-2 rounded-[2rem] px-4 py-2 sm:px-5 sm:py-3 text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg whitespace-nowrap ${availability?.available
-                    ? "bg-emerald-500 text-white hover:bg-emerald-600"
-                    : "bg-vasta-text text-vasta-bg hover:bg-vasta-text-soft"
+                  ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                  : "bg-vasta-text text-vasta-bg hover:bg-vasta-text-soft"
                   }`}
                 disabled={
                   checking || (username.length > 0 && username.length < 3)
