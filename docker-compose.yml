@@ -19,34 +19,17 @@ services:
 
   vasta-api:
     build: .
-    volumes:
-      - //d/Vasta/vasta:/rails
-    command: [ "bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0" ]
     ports:
-      - "3000:3000"
+      - "8080:8080"
     environment:
-      RAILS_ENV: development
       DATABASE_URL: postgres://vasta:password@db:5432/vasta_development
       REDIS_URL: redis://redis:6379/1
-      VASTA_INTERNO: "true"
     depends_on:
       - db
       - redis
-    user: root
 
-  sidekiq:
-    build: .
-    volumes:
-      - //d/Vasta/vasta:/rails
-    command: [ "bundle", "exec", "sidekiq" ]
-    environment:
-      RAILS_ENV: development
-      DATABASE_URL: postgres://vasta:password@db:5432/vasta_development
-      REDIS_URL: redis://redis:6379/1
-    depends_on:
-      - db
-      - redis
-    user: root
+  # Sidekiq service removed as it was Rails-based. 
+  # If a Go worker is needed (e.g. Asynq), add a service for it here.
 
 volumes:
   postgres_data:
