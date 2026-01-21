@@ -1,7 +1,6 @@
 package stripe
 
 import (
-	"github.com/stripe/stripe-go/v76"
 	"github.com/stripe/stripe-go/v76/client"
 )
 
