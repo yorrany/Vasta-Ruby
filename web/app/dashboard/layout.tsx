@@ -331,48 +331,23 @@ export default function DashboardLayout({ children }: Props) {
                 </button>
               </div>
 
-              <nav className="mt-6 flex flex-1 flex-col gap-1 px-4 text-sm">
-                {navItems.map(item => (
-                  <SidebarLink key={item.href} href={item.href} label={item.label} icon={item.icon} exact={item.exact} />
-                ))}
-                <div className="my-2 h-px bg-vasta-border/50 mx-2" />
-                <SidebarLink href="/" label="Voltar para o site" icon={ArrowUpRight} />
-              </nav>
+              <div className="flex-1 overflow-y-auto px-4 py-2 custom-scrollbar">
+                <nav className="flex flex-col gap-1 text-sm">
+                  {navItems.map(item => (
+                    <SidebarLink key={item.href} href={item.href} label={item.label} icon={item.icon} exact={item.exact} />
+                  ))}
+                  <div className="my-2 h-px bg-vasta-border/50 mx-2" />
+                  <SidebarLink href="/" label="Voltar para o site" icon={ArrowUpRight} />
+                </nav>
 
-              <div className="px-4 mb-4">
-                <div className="rounded-[2rem] bg-vasta-surface-soft p-5 border border-vasta-border/50 shadow-sm relative overflow-hidden group">
-                  {/* Background Glow */}
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-vasta-primary/5 blur-2xl rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-vasta-primary/10 transition-colors" />
-
-                  <div className="flex flex-col gap-4 mb-4">
-                    <div className="min-w-0">
+                <div className="mt-8">
+                  <div className="rounded-2xl bg-vasta-surface-soft p-4 border border-vasta-border/50 shadow-sm">
+                    <div className="mb-3">
                       <div className="text-[10px] font-bold text-vasta-muted uppercase tracking-widest">Link Vasta</div>
-                      <div className="mt-1 text-sm font-black text-vasta-text truncate">@{settings.username}</div>
+                      <div className="mt-0.5 text-sm font-black text-vasta-text truncate">@{settings.username}</div>
                     </div>
-                    <div className="w-full p-2.5 rounded-2xl bg-white border border-vasta-border flex items-center justify-center shadow-lg shadow-black/5 shrink-0 overflow-hidden">
-                      <QRCodeSVG
-                        value={`https://vasta.pro/${settings.username}`}
-                        size={256}
-                        style={{ width: '100%', height: 'auto' }}
-                        bgColor="#FFFFFF"
-                        fgColor="#000000"
-                        className="text-black"
-                        level="L"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      <a
-                        href={`/${settings.username}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 rounded-xl bg-vasta-surface border border-vasta-border py-2 text-[11px] font-bold text-vasta-text hover:bg-vasta-border/30 transition-all border-b-2 border-b-vasta-border active:border-b-0 active:translate-y-[2px]"
-                      >
-                        <ArrowUpRight size={14} className="text-vasta-muted" />
-                        <span>Abrir</span>
-                      </a>
+                    <div className="space-y-2">
                       <button
                         onClick={() => {
                           const url = `https://vasta.pro/${settings.username}`;
@@ -388,29 +363,29 @@ export default function DashboardLayout({ children }: Props) {
                             setTimeout(() => setCopied(false), 2000);
                           }
                         }}
-                        className={`flex items-center justify-center gap-2 rounded-xl border py-2 text-[11px] font-bold transition-all border-b-2 active:border-b-0 active:translate-y-[2px] ${copied
-                          ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-500 border-b-emerald-500/50"
-                          : "bg-vasta-surface border-vasta-border text-vasta-text hover:bg-vasta-border/30 border-b-vasta-border"
+                        className={`w-full flex items-center justify-center gap-2 rounded-xl border py-2 text-[11px] font-bold transition-all ${copied
+                          ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-500"
+                          : "bg-vasta-surface border-vasta-border text-vasta-text hover:bg-vasta-border/30"
                           }`}
                       >
                         <Share2 size={14} className={copied ? "text-emerald-500" : "text-vasta-muted"} />
-                        <span>{copied ? 'Copiado' : (typeof navigator !== 'undefined' && !!navigator.share ? 'Enviar' : 'Copiar')}</span>
+                        <span>{copied ? 'Copiado!' : 'Compartilhar'}</span>
+                      </button>
+
+                      <button
+                        onClick={() => confirm({
+                          title: "Seu QR Code",
+                          description: "Escaneie para acessar seu perfil instantaneamente.",
+                          variant: 'info',
+                          confirmText: "Fechar",
+                          onConfirm: () => { },
+                        })}
+                        className="w-full flex items-center justify-center gap-2 rounded-xl border border-vasta-border bg-vasta-surface py-2 text-[11px] font-bold text-vasta-muted hover:text-vasta-text hover:bg-vasta-border/30 transition-all"
+                      >
+                        <QrCode size={14} />
+                        <span>Ver QR Code</span>
                       </button>
                     </div>
-
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(`https://vasta.pro/${settings.username}`);
-                        setCopied(true);
-                        setTimeout(() => setCopied(false), 2000);
-                      }}
-                      className={`group/btn w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-[11px] font-bold transition-all ${copied
-                        ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-                        : "bg-vasta-text text-vasta-bg shadow-lg shadow-vasta-text/10 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
-                        }`}
-                    >
-                      <span>{copied ? 'Link copiado com sucesso!' : 'Copiar link público'}</span>
-                    </button>
                   </div>
                 </div>
               </div>
