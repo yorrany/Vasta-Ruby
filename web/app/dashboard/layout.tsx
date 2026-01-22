@@ -20,7 +20,8 @@ import {
   ChevronsUpDown,
   Sparkles,
   Share2,
-  QrCode
+  QrCode,
+  Camera
 } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
 import { createClient } from "../../lib/supabase/client"
@@ -654,6 +655,43 @@ function PreviewMockup({ settings }: { settings: AppearanceSettings }) {
             <div className="h-full w-full bg-gradient-to-br from-vasta-primary/20 to-vasta-accent/20" />
           )}
           <div className="absolute inset-0 bg-black/10" />
+
+          {/* Credits - Elegant Hover Reveal (Matches Public Profile) */}
+          {settings.coverImageCredit && (
+            <div className="absolute bottom-2 right-2 z-30 flex flex-col items-end pointer-events-none">
+              <div className="group flex items-center bg-black/20 hover:bg-black/80 backdrop-blur-sm border border-white/10 hover:border-white/20 rounded-full py-1 px-1.5 transition-all duration-500 ease-out max-w-[24px] hover:max-w-[200px] overflow-hidden shadow-lg hover:shadow-2xl pointer-events-auto cursor-default">
+                <Camera className="w-3 h-3 text-white/90 shrink-0" strokeWidth={2} />
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-2 flex flex-col leading-none whitespace-nowrap min-w-[120px]">
+                  <span className="text-[8px] text-white/50 font-medium uppercase tracking-wider mb-0.5">Photo by</span>
+                  <div className="text-[9px] text-white font-medium flex gap-1">
+                    {settings.coverImageCredit.includes('|') ? (
+                      <>
+                        <a
+                          href={settings.coverImageCredit.split('|')[1].startsWith('http') ? settings.coverImageCredit.split('|')[1] : `https://www.pexels.com/@${settings.coverImageCredit.split('|')[1]}?utm_source=vasta&utm_medium=referral`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-indigo-400 hover:underline transition-colors"
+                        >
+                          {settings.coverImageCredit.split('|')[0]}
+                        </a>
+                        <span className="text-white/40">on</span>
+                        <a
+                          href="https://www.pexels.com/?utm_source=vasta&utm_medium=referral"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-indigo-400 hover:underline transition-colors"
+                        >
+                          Pexels
+                        </a>
+                      </>
+                    ) : (
+                      <span>{settings.coverImageCredit}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="relative z-10 p-4 flex flex-col items-center -mt-12">
