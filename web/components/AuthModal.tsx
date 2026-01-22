@@ -108,11 +108,9 @@ export function AuthModal() {
 
 
   const handleOAuth = async (provider: 'google' | 'linkedin' | 'github' | 'facebook') => {
-    // Force localhost in development to avoid IP/Origin mismatches with Supabase Allow List
-    const origin = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : window.location.origin;
-    const redirectTo = `${origin}/auth/callback`;
-
-    console.log("OAuth Redirecting to:", redirectTo)
+    // Cloud-native: Rely on actual browser origin to prevent open-redirect vulnerabilities
+    // Make sure your Supabase Redirect Allow List matches your deployment domains.
+    const redirectTo = `${window.location.origin}/auth/callback`;
 
     await supabase.auth.signInWithOAuth({
       provider,
