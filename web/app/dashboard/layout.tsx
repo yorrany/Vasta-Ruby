@@ -289,13 +289,15 @@ export default function DashboardLayout({ children }: Props) {
                         {dialogConfig.content}
                       </div>
                     )}
-                    <div className="grid grid-cols-2 gap-3 pt-2">
-                      <button
-                        onClick={() => setDialogOpen(false)}
-                        className="py-3 rounded-xl font-bold text-sm border border-vasta-border text-vasta-text hover:bg-vasta-surface-soft transition-colors"
-                      >
-                        {dialogConfig.cancelText || "Cancelar"}
-                      </button>
+                    <div className={`grid gap-3 pt-2 ${dialogConfig.cancelText?.trim() ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                      {dialogConfig.cancelText && dialogConfig.cancelText.trim() !== "" && (
+                        <button
+                          onClick={() => setDialogOpen(false)}
+                          className="py-3 rounded-xl font-bold text-sm border border-vasta-border text-vasta-text hover:bg-vasta-surface-soft transition-colors"
+                        >
+                          {dialogConfig.cancelText}
+                        </button>
+                      )}
                       <button
                         onClick={handleConfirm}
                         className={`py-3 rounded-xl font-bold text-sm text-white shadow-lg transition-all ${dialogConfig.variant === 'danger'
@@ -384,17 +386,21 @@ export default function DashboardLayout({ children }: Props) {
                           description: "Escaneie para acessar seu perfil instantaneamente.",
                           variant: 'info',
                           confirmText: "Fechar",
-                          cancelText: " ",
+                          cancelText: "", // Empty to hide cancel button
                           onConfirm: () => { },
                           content: (
-                            <div className="p-4 bg-white rounded-xl border border-vasta-border shadow-inner flex justify-center w-full">
-                              <QRCodeSVG
-                                value={`https://vasta.pro/${settings.username}`}
-                                size={200}
-                                bgColor="#FFFFFF"
-                                fgColor="#000000"
-                                level="L"
-                              />
+                            <div className="relative group">
+                              <div className="absolute inset-0 bg-gradient-to-tr from-vasta-primary to-purple-500 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity" />
+                              <div className="relative p-4 bg-white rounded-3xl shadow-2xl flex justify-center w-full max-w-[240px] mx-auto">
+                                <QRCodeSVG
+                                  value={`https://vasta.pro/${settings.username}`}
+                                  size={200}
+                                  bgColor="#FFFFFF"
+                                  fgColor="#000000"
+                                  level="L"
+                                  className="w-full h-auto"
+                                />
+                              </div>
                             </div>
                           )
                         })}
