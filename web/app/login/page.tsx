@@ -194,22 +194,6 @@ export default function LoginPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleOAuth('linkedin')}
-                  className="flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/50 py-3.5 text-sm font-semibold text-white transition-all hover:bg-slate-800"
-                >
-                  <Linkedin className="h-5 w-5 text-[#0A66C2]" fill="currentColor" />
-                  LinkedIn
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleOAuth('github')}
-                  className="flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/50 py-3.5 text-sm font-semibold text-white transition-all hover:bg-slate-800"
-                >
-                  <Github className="h-5 w-5 text-white" fill="currentColor" />
-                  GitHub
-                </button>
-                <button
-                  type="button"
                   onClick={() => handleOAuth('facebook')}
                   className="flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/50 py-3.5 text-sm font-semibold text-white transition-all hover:bg-slate-800"
                 >

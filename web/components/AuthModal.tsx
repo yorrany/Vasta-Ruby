@@ -240,32 +240,12 @@ export function AuthModal() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleOAuth('linkedin')}
+                  onClick={() => handleOAuth('facebook')}
                   className="flex w-full items-center justify-center gap-3 rounded-2xl border border-vasta-border bg-vasta-surface-soft/50 py-3.5 text-sm font-semibold text-vasta-text transition-all hover:bg-vasta-surface-soft"
                 >
-                  <Linkedin className="h-5 w-5 text-[#0A66C2]" fill="currentColor" />
-                  Continuar com LinkedIn
+                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+                  Continuar com Facebook
                 </button>
-
-                {!showMoreSocial ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowMoreSocial(true)}
-                    className="flex w-full items-center justify-center gap-2 py-2 text-[10px] font-bold uppercase tracking-widest text-vasta-muted hover:text-vasta-text transition-colors"
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                    Mais opções
-                  </button>
-                ) : (
-                  <div className="flex justify-center gap-4 animate-in slide-in-from-top-2 duration-300">
-                    <button onClick={() => handleOAuth('github')} className="rounded-xl border border-vasta-border p-3 text-vasta-muted hover:text-vasta-text transition-colors">
-                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.85 10.91.57.11.78-.25.78-.55v-1.94c-3.19.69-3.86-1.54-3.86-1.54-.52-1.32-1.28-1.67-1.28-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.34.95.1-.76.41-1.28.75-1.57-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.17 1.18.92-.26 1.9-.39 2.88-.39.98 0 1.96.13 2.88.39 2.2-1.5 3.17-1.18 3.17-1.18.62 1.58.23 2.75.11 3.04.74.8 1.18 1.83 1.18 3.08 0 4.42-2.69 5.39-5.25 5.68.41.35.78 1.04.78 2.1v3.11c0 .3.21.67.79.55C20.71 21.39 24 17.08 24 12c0-6.35-5.15-11.5-11.5-11.5z" /></svg>
-                    </button>
-                    <button onClick={() => handleOAuth('facebook')} className="rounded-xl border border-vasta-border p-3 text-vasta-muted hover:text-vasta-text transition-colors">
-                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
-                    </button>
-                  </div>
-                )}
               </div>
             </form>
           )}
