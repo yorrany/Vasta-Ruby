@@ -224,11 +224,11 @@ export function Hero() {
           </div>
 
           <div className="space-y-6 animate-fade-in-up delay-100 fill-mode-forwards opacity-0 text-left">
-            <h1 className="text-4xl xs:text-[2.75rem] font-black tracking-tighter text-vasta-text sm:text-6xl lg:text-7xl leading-[0.95] md:leading-[0.9] max-w-[15ch]">
-              A plataforma para{' '}
-              <span key={ROLES[index]} className="gradient-title relative inline-block animate-fade-in-up">
+            <h1 className="text-4xl xs:text-[2.75rem] font-black tracking-tighter text-vasta-text sm:text-6xl lg:text-7xl leading-tight md:leading-tight max-w-2xl">
+              A plataforma para <br className="hidden" />
+              <span key={ROLES[index]} className="gradient-title relative inline-block animate-fade-in-up pb-2">
                 {ROLES[index]}.
-                <div className="absolute -bottom-2 left-0 h-2 w-full bg-vasta-primary/20 blur-md rounded-full -z-10 animate-pulse-soft" />
+                <div className="absolute -bottom-1 left-0 h-2 w-full bg-vasta-primary/20 blur-md rounded-full -z-10 animate-pulse-soft" />
               </span>
             </h1>
             <p className="max-w-xl text-lg text-vasta-muted md:text-xl leading-relaxed font-medium">
