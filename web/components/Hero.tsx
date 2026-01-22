@@ -14,6 +14,7 @@ import {
   Loader2,
   Sparkles,
   ShoppingBag,
+  Camera
 } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
 
@@ -80,6 +81,7 @@ export function Hero() {
   const [bannerImage, setBannerImage] = useState(
     "https://images.unsplash.com/photo-1614851099511-773084f6911d?w=800&h=400&fit=crop"
   );
+  const [bannerCredit, setBannerCredit] = useState<string | null>(null);
   const [product1Image, setProduct1Image] = useState(
     "https://images.unsplash.com/photo-1626785774573-4b799314346d?w=400&h=400&fit=crop"
   );
@@ -118,7 +120,7 @@ export function Hero() {
         // Use Pexels if available, else Fallback to Unsplash Curated
         if (data.portraits?.length > 0) {
           const randomPortrait = data.portraits[Math.floor(Math.random() * data.portraits.length)];
-          setProfileImage(randomPortrait);
+          setProfileImage(randomPortrait.url || randomPortrait);
         } else {
           const randomPortraitId = CURATED_PORTRAITS[Math.floor(Math.random() * CURATED_PORTRAITS.length)];
           setProfileImage(`https://images.unsplash.com/${randomPortraitId}?w=400&h=400&fit=crop&crop=faces`);
@@ -126,7 +128,10 @@ export function Hero() {
 
         if (data.banners?.length > 0) {
           const randomBanner = data.banners[Math.floor(Math.random() * data.banners.length)];
-          setBannerImage(randomBanner);
+          setBannerImage(randomBanner.url || randomBanner);
+          if (randomBanner.photographer) {
+            setBannerCredit(`${randomBanner.photographer}|${randomBanner.photographer_url}`);
+          }
         } else {
           const randomBannerId = CURATED_BANNERS[Math.floor(Math.random() * CURATED_BANNERS.length)];
           setBannerImage(`https://images.unsplash.com/${randomBannerId}?w=800&h=400&fit=crop`);
@@ -134,8 +139,8 @@ export function Hero() {
 
         if (data.products?.length > 1) {
           const shuffled = [...data.products].sort(() => Math.random() - 0.5);
-          setProduct1Image(shuffled[0]);
-          setProduct2Image(shuffled[1]);
+          setProduct1Image(shuffled[0].url || shuffled[0]);
+          setProduct2Image(shuffled[1].url || shuffled[1]);
         } else {
           // Fallback
           const shuffledProducts = [...CURATED_PRODUCTS].sort(() => Math.random() - 0.5);
@@ -391,6 +396,37 @@ export function Hero() {
                         className="h-full w-full object-cover transform scale-105"
                       />
                       <div className="absolute bottom-0 w-full h-24 bg-gradient-to-t from-vasta-bg to-transparent" />
+
+                      {/* Credits Button */}
+                      {bannerCredit && (
+                        <div className="absolute bottom-2 right-2 z-30 flex flex-col items-end pointer-events-none">
+                          <div className="group flex items-center bg-black/20 hover:bg-black/80 backdrop-blur-sm border border-white/10 hover:border-white/20 rounded-full py-1 px-1.5 transition-all duration-500 ease-out max-w-[24px] hover:max-w-[200px] overflow-hidden shadow-lg hover:shadow-2xl pointer-events-auto cursor-default">
+                            <Camera className="w-3 h-3 text-white/90 shrink-0" strokeWidth={2} />
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-2 flex flex-col leading-none whitespace-nowrap min-w-[120px]">
+                              <span className="text-[8px] text-white/50 font-medium uppercase tracking-wider mb-0.5">Photo by</span>
+                              <div className="text-[9px] text-white font-medium flex gap-1">
+                                <a
+                                  href={bannerCredit.split('|')[1]}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="hover:text-indigo-400 hover:underline transition-colors"
+                                >
+                                  {bannerCredit.split('|')[0]}
+                                </a>
+                                <span className="text-white/40">on</span>
+                                <a
+                                  href="https://www.pexels.com/?utm_source=vasta&utm_medium=referral"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="hover:text-indigo-400 hover:underline transition-colors"
+                                >
+                                  Pexels
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Profile Info */}

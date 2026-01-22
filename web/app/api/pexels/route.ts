@@ -23,7 +23,11 @@ export async function GET() {
         const res = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${count}&orientation=portrait`, { headers });
         if (!res.ok) throw new Error(`Pexels Error: ${res.status}`);
         const data = await res.json();
-        return data.photos?.map((p: any) => p.src.large2x || p.src.large) || [];
+        return data.photos?.map((p: any) => ({
+          url: p.src.large2x || p.src.large,
+          photographer: p.photographer,
+          photographer_url: p.photographer_url
+        })) || [];
     } catch (e) {
         console.error(e);
         return [];
