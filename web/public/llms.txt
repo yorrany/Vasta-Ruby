@@ -1,0 +1,65 @@
+# Vasta - Manifesto de Engenharia e Guia para Modelos de Linguagem
+
+## Visão Geral
+O Vasta é uma plataforma premium de "Link in Bio" e criação de sites pessoais minimalistas, focada em estética de alto padrão e experiência do usuário deliberada. Seguimos uma filosofia de "Backend Inteligente, Frontend Leve" e "Aesthetics are everything".
+
+## Princípios de Design (O Manifesto Vasta)
+Qualquer alteração ou implementação feita por um LLM deve seguir o manifesto UX/UI:
+- **Nada é acidental**: Cada pixel tem um propósito. Se não puder explicar sua existência, remova.
+- **Autoridade Visual**: O Vasta não é "amigável", "brincalhão" ou "clichê". Ele é autoritário, calmo e deliberado.
+- **Built for Operators**: Criado para quem executa, não para quem apenas observa. Evite estéticas de "AI Slop".
+- **Tipografia Restrita**: Máximo de 2 famílias de fontes.
+  - **Serif**: Para títulos, importância e decisões irreversíveis.
+  - **Mono**: Para estados do sistema, métricas e dados brutos.
+  - **PROIBIDO**: `Inter`, `Roboto`, `Arial`, `system-ui`, `Space Grotesk`.
+- **Hierarquia sobre Simetria**: Guie o olhar do usuário através do peso tipográfico e ritmo vertical, não apenas equilibrando grades.
+
+## Stack Tecnológica
+- **Core**: Next.js 16 (React 19) rodando em modo Static Export.
+- **Estilização**: CSS Vanilla com Design Tokens (Variáveis CSS). Evitamos Tailwind a menos que necessário para prototipagem rápida.
+- **Dados & Auth**: Supabase (PostgreSQL).
+- **Deploy**: Cloudflare Pages para o Frontend (100% estático/SPA).
+- **Provedores de busca**: Pexels API para imagens de background.
+
+## Estrutura de Dados (Supabase)
+
+### Tabela `profiles`
+Configurações globais do perfil do usuário.
+- `id`: UUID (vinculado ao auth.users).
+- `username`: Nome único na URL (ex: vasta.pro/yorrany).
+- `theme`: Tema selecionado ('noir', 'custom', 'vasta-blue').
+- `plan`: Nível de assinatura ('free', 'pro', 'enterprise').
+- `display_name`: Nome exibido no topo do perfil.
+
+### Tabela `links`
+Itens listados no perfil público.
+- `profile_id`: Referência ao perfil proprietário.
+- `title`: Texto do botão.
+- `url`: Link de destino.
+- `display_order`: Inteiro para ordenação via Drag & Drop.
+- `is_active`: Toggle de visibilidade.
+
+## Endpoints & Integrações
+A maioria das operações é feita via Supabase SDK Client, mas existem rotas internas:
+
+### ➤ Verificar Disponibilidade de Username
+- **Endpoint**: `GET /api/profiles/check_username?username={slug}`
+- **Comportamento**: Retorna `{ available: boolean, suggestions: string[] }` com rate-limit e delay artificial para segurança.
+
+### ➤ Busca de Imagens (Pexels)
+- **Endpoint**: `/api/pexels`
+- **Uso**: Customização de temas no "Estúdio de Criação".
+
+## Governança UX (UX Guard)
+O projeto possui um sistema de governança automatizado.
+- **Execução**: `npm run check-ux` (ou execute `node .antigravity/plugins/vasta-ux-guard/scanner.js`).
+- **O que verifica**: Uso de fontes proibidas, cores fora dos tokens e violações de hierarquia.
+
+## Fluxo de Desenvolvimento
+1. **Entenda a Intencionalidade**: Antes de codar, valide se a solução é minimalista ou apenas "decorativa".
+2. **Use os Tokens**: Utilize as variáveis CSS definidas em `globals.css` (ex: `--vasta-primary`).
+3. **Respeite o Ritmo**: O Vasta prioriza espaçamento arquitetural e ritmo vertical sobre layouts pesados em cartões.
+4. **Validar**: Sempre execute o UX Guard após alterações em componentes visuais.
+
+---
+*Este documento serve para alinhar o entendimento de agentes de IA sobre o projeto Vasta.*
