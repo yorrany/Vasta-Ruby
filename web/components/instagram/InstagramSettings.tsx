@@ -23,6 +23,7 @@ interface InstagramMedia {
     media_type: string;
     custom_link?: string;
     caption?: string;
+    username?: string;
 }
 
 export default function InstagramSettings() {
@@ -67,8 +68,11 @@ export default function InstagramSettings() {
 
     const handleConnect = async () => {
         try {
-            // Redirects to Instagram
-            await initiateInstagramAuth();
+            // Get Auth URL from Server Action
+            const url = await initiateInstagramAuth();
+            if (url) {
+                window.location.href = url;
+            }
         } catch (error: any) {
             console.error("Connection Error:", error);
             alert(error.message || 'Erro ao iniciar conexão com Instagram.');
@@ -163,8 +167,8 @@ export default function InstagramSettings() {
                     <button
                         onClick={() => handleModeChange('grid')}
                         className={`relative p-4 rounded-xl border-2 text-left transition-all ${displayMode === 'grid'
-                                ? 'border-black dark:border-white bg-gray-50 dark:bg-gray-800'
-                                : 'border-transparent bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-100 dark:border-gray-800'
+                            ? 'border-black dark:border-white bg-gray-50 dark:bg-gray-800'
+                            : 'border-transparent bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-100 dark:border-gray-800'
                             }`}
                     >
                         <div className="mb-3 w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
@@ -180,8 +184,8 @@ export default function InstagramSettings() {
                     <button
                         onClick={() => handleModeChange('gallery')}
                         className={`relative p-4 rounded-xl border-2 text-left transition-all ${displayMode === 'gallery'
-                                ? 'border-black dark:border-white bg-gray-50 dark:bg-gray-800'
-                                : 'border-transparent bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-100 dark:border-gray-800'
+                            ? 'border-black dark:border-white bg-gray-50 dark:bg-gray-800'
+                            : 'border-transparent bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-100 dark:border-gray-800'
                             }`}
                     >
                         <div className="mb-3 w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
@@ -197,8 +201,8 @@ export default function InstagramSettings() {
                     <button
                         onClick={() => handleModeChange('simple_link')}
                         className={`relative p-4 rounded-xl border-2 text-left transition-all ${displayMode === 'simple_link'
-                                ? 'border-black dark:border-white bg-gray-50 dark:bg-gray-800'
-                                : 'border-transparent bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-100 dark:border-gray-800'
+                            ? 'border-black dark:border-white bg-gray-50 dark:bg-gray-800'
+                            : 'border-transparent bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-100 dark:border-gray-800'
                             }`}
                     >
                         <div className="mb-3 w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">

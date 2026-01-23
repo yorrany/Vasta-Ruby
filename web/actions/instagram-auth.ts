@@ -20,7 +20,7 @@ export async function initiateInstagramAuth() {
   
   const authUrl = `https://api.instagram.com/oauth/authorize?client_id=${INSTAGRAM_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${scope}&response_type=code&state=${state}`;
 
-  redirect(authUrl);
+  return authUrl;
 }
 
 export async function processInstagramCallback(code: string) {
