@@ -16,7 +16,6 @@ import {
 } from "lucide-react"
 import { createClient } from "../../lib/supabase/client"
 import { useAuth } from "../../lib/AuthContext"
-import { ComparisonCalculator } from "../../components/ComparisonCalculator"
 
 export default function DashboardHome() {
    const { user } = useAuth()
@@ -297,9 +296,7 @@ export default function DashboardHome() {
             </div>
          </div>
 
-         <div className="mt-8">
-            <ComparisonCalculator />
-         </div>
+
       </div>
    )
 }

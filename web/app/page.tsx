@@ -16,7 +16,9 @@ export default function HomePage() {
         <HowItWorks />
         <Pricing />
         <section className="bg-vasta-bg py-20 px-4">
-          <ComparisonCalculator />
+          <div className="mx-auto max-w-7xl">
+            <ComparisonCalculator />
+          </div>
         </section>
         <Testimonials />
         <FAQ />

@@ -71,7 +71,7 @@ export function ComparisonCalculator() {
     }, [revenue, ticket])
 
     return (
-        <div className="w-full max-w-5xl mx-auto p-6 md:p-8 rounded-[2.5rem] bg-vasta-surface border border-vasta-border shadow-2xl relative overflow-hidden">
+        <div className="w-full max-w-7xl mx-auto p-6 md:p-8 rounded-[2.5rem] bg-vasta-surface border border-vasta-border shadow-2xl relative overflow-hidden">
             {/* Decorative Elements */}
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-vasta-primary/5 rounded-full blur-3xl" />
             <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl" />
