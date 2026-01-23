@@ -19,6 +19,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard/aparencia?success=instagram_connected', req.url));
   } catch (err) {
     console.error('Instagram Callback Error:', err);
-    return NextResponse.redirect(new URL('/dashboard/aparencia?error=instagram_failed', req.url));
+    return NextResponse.redirect(new URL(`/dashboard/aparencia?error=${encodeURIComponent(err instanceof Error ? err.message : 'Unknown Error')}`, req.url));
   }
 }
