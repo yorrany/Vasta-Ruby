@@ -1,0 +1,180 @@
+import { createClient } from '@/lib/supabase/server';
+import { unstable_cache } from 'next/cache';
+import crypto from 'crypto';
+
+// --- Types ---
+
+export interface InstagramMedia {
+  id: string;
+  caption?: string;
+  media_type: 'IMAGE' | 'VIDEO' | 'CAROUSEL_ALBUM';
+  media_url: string;
+  thumbnail_url?: string; // For videos
+  permalink: string;
+  timestamp: string;
+  username: string;
+  // Merged fields
+  custom_link?: string;
+}
+
+interface InstagramTokenResponse {
+  access_token: string;
+  user_id: string;
+  expires_in?: number;
+}
+
+interface UserAccessToken {
+  access_token: string;
+}
+
+// --- Encryption Helper ---
+
+const ENCRYPTION_KEY = process.env.INSTAGRAM_CLIENT_SECRET || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'default-secret-key-change-me'; // Fallback for dev
+const IV_LENGTH = 16;
+
+function encrypt(text: string): string {
+  // Simple encryption for demo purposes. In production, use a dedicated KMS or stronger key management.
+  // Using AES-256-CBC
+  // Key must be 32 bytes (256 bits). If string is shorter/longer, we might need to hash it.
+  const key = crypto.createHash('sha256').update(String(ENCRYPTION_KEY)).digest('base64').substr(0, 32);
+  const iv = crypto.randomBytes(IV_LENGTH);
+  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv);
+  let encrypted = cipher.update(text);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  return iv.toString('hex') + ':' + encrypted.toString('hex');
+}
+
+function decrypt(text: string): string {
+  const textParts = text.split(':');
+  const iv = Buffer.from(textParts.shift()!, 'hex');
+  const encryptedText = Buffer.from(textParts.join(':'), 'hex');
+  const key = crypto.createHash('sha256').update(String(ENCRYPTION_KEY)).digest('base64').substr(0, 32);
+  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv);
+  let decrypted = decipher.update(encryptedText);
+  decrypted = Buffer.concat([decrypted, decipher.final()]);
+  return decrypted.toString();
+}
+
+// --- Instagram Service ---
+
+// cached fetch for Instagram API
+const fetchInstagramMedia = async (accessToken: string, userId: string) => {
+  const fields = 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,username';
+  const url = `https://graph.instagram.com/me/media?fields=${fields}&access_token=${accessToken}&limit=9`; // Limit to 9 for grid
+
+  const res = await fetch(url, {
+    next: { 
+      revalidate: 14400, // 4 hours
+      tags: [`instagram-${userId}`] 
+    }
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    console.error('Instagram API Error:', error);
+    throw new Error('Failed to fetch Instagram media');
+  }
+
+  const data = await res.json();
+  return data.data as InstagramMedia[];
+};
+
+export async function getInstagramFeed(userId: string): Promise<InstagramMedia[] | null> {
+  const supabase = await createClient();
+  
+  // 1. Get Connection Details with Token
+  const { data: connection } = await supabase
+    .from('instagram_connections')
+    .select('access_token, instagram_user_id')
+    .eq('user_id', userId)
+    .single();
+
+  if (!connection) return null;
+
+  try {
+    const decryptedToken = decrypt(connection.access_token);
+
+    // 2. Fetch Media from Instagram (Cached via fetch)
+    const mediaItems = await fetchInstagramMedia(decryptedToken, userId);
+
+    // 3. Fetch Custom Links from Supabase
+    const { data: links } = await supabase
+      .from('instagram_post_links')
+      .select('instagram_media_id, target_url')
+      .eq('user_id', userId);
+
+    // 4. Merge Data
+    const linkMap = new Map(links?.map(l => [l.instagram_media_id, l.target_url]) || []);
+
+    const mergedMedia = mediaItems.map(item => ({
+      ...item,
+      custom_link: linkMap.get(item.id) || undefined
+    }));
+
+    return mergedMedia;
+
+  } catch (error) {
+    console.error('Error getting Instagram feed:', error);
+    return null; // Fallback gracefully
+  }
+}
+
+export async function saveInstagramConnection(
+  userId: string, 
+  authData: { 
+    access_token: string; 
+    user_id: string; 
+    username?: string; 
+    expires_in?: number 
+  }
+) {
+  const supabase = await createClient();
+  
+  const encryptedToken = encrypt(authData.access_token);
+  const expiresAt = authData.expires_in 
+    ? new Date(Date.now() + authData.expires_in * 1000).toISOString()
+    : undefined;
+
+  const { error } = await supabase
+    .from('instagram_connections')
+    .upsert({
+      user_id: userId,
+      instagram_user_id: authData.user_id,
+      username: authData.username,
+      access_token: encryptedToken,
+      token_expires_at: expiresAt,
+      updated_at: new Date().toISOString()
+    });
+
+  if (error) throw error;
+}
+
+export async function getInstagramSettings(userId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('instagram_settings')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+    
+  return data;
+}
+
+export async function updateInstagramSettings(userId: string, settings: { display_mode: string }) {
+    const supabase = await createClient();
+    const { error } = await supabase
+        .from('instagram_settings')
+        .upsert({
+            user_id: userId,
+            ...settings
+        });
+    
+    if (error) throw error;
+}
+
+export async function disconnectInstagram(userId: string) {
+    const supabase = await createClient();
+    await supabase.from('instagram_connections').delete().eq('user_id', userId);
+    await supabase.from('instagram_post_links').delete().eq('user_id', userId);
+    // Optional: Keep settings? Or delete? keeping settings is safer.
+}
