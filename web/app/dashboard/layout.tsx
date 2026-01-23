@@ -558,6 +558,7 @@ function PreviewMockup({ settings }: { settings: AppearanceSettings }) {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
+
   useEffect(() => {
     async function fetchData() {
       if (!user) return
@@ -585,13 +586,24 @@ function PreviewMockup({ settings }: { settings: AppearanceSettings }) {
 
     fetchData()
 
+    // Realtime subscription
     const channel = supabase.channel('preview-updates')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'links', filter: `profile_id=eq.${user?.id}` }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products', filter: `profile_id=eq.${user?.id}` }, () => fetchData())
-      .subscribe()
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') console.log('Preview subscribed to changes')
+      })
+
+    // Custom event for local updates (failsafe)
+    const handleLocalUpdate = () => {
+      console.log('Received local link update event')
+      fetchData()
+    }
+    window.addEventListener('vasta:link-update', handleLocalUpdate)
 
     return () => {
       supabase.removeChannel(channel)
+      window.removeEventListener('vasta:link-update', handleLocalUpdate)
     }
   }, [user])
 

@@ -59,6 +59,7 @@ export function LinkForm({ initialTitle = "", initialUrl = "", linkId, onSuccess
 
                 if (error) throw error
             }
+            window.dispatchEvent(new CustomEvent('vasta:link-update'))
             onSuccess()
         } catch (error) {
             console.error("Error saving link:", error)
