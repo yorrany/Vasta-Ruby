@@ -5,6 +5,7 @@ import { createClient } from "../../lib/supabase/client"
 import { Loader2, ExternalLink, Camera } from "lucide-react"
 import { PremiumLinkCard } from './PremiumLinkCard'
 import { VastaLogo } from '../VastaLogo'
+import { InstagramFeedSection } from './InstagramFeedSection'
 import "../../app/globals.css" // Import global styles for Tailwind components
 
 type LinkStyle = 'glass' | 'solid' | 'outline'
