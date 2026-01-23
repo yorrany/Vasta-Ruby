@@ -22,6 +22,8 @@ import { GripVertical, Plus, Loader2 } from "lucide-react"
 import { createClient } from "../../../lib/supabase/client"
 import { useAuth } from "../../../lib/AuthContext"
 import { LinkModal } from "../../../components/links/LinkModal"
+import { AddLinkModal } from "../../../components/links/AddLinkModal"
+import { isValidUrl } from "../../../components/links/AddLinkModal/types"
 
 type LinkItem = {
   id: number
@@ -57,9 +59,8 @@ function SortableLinkItem({ link, toggleActive, onEdit }: SortableItemProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center gap-3 rounded-2xl border border-vasta-border bg-vasta-surface/50 p-4 transition-all hover:bg-vasta-surface ${
-        isDragging ? "shadow-2xl brightness-110 scale-[1.02]" : "shadow-sm"
-      } ${!link.is_active ? "opacity-60 grayscale-[0.5] hover:opacity-100 hover:grayscale-0" : ""}`}
+      className={`group flex items-center gap-3 rounded-2xl border border-vasta-border bg-vasta-surface/50 p-4 transition-all hover:bg-vasta-surface ${isDragging ? "shadow-2xl brightness-110 scale-[1.02]" : "shadow-sm"
+        } ${!link.is_active ? "opacity-60 grayscale-[0.5] hover:opacity-100 hover:grayscale-0" : ""}`}
     >
       <div
         {...attributes}
@@ -75,24 +76,22 @@ function SortableLinkItem({ link, toggleActive, onEdit }: SortableItemProps) {
       </div>
 
       <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-        <button 
-           onClick={() => onEdit(link)}
-           className="rounded-lg bg-vasta-surface-soft px-3 py-1.5 text-xs font-medium text-vasta-text transition-colors hover:bg-vasta-border"
+        <button
+          onClick={() => onEdit(link)}
+          className="rounded-lg bg-vasta-surface-soft px-3 py-1.5 text-xs font-medium text-vasta-text transition-colors hover:bg-vasta-border"
         >
           Editar
         </button>
         <button
           onClick={() => toggleActive(link.id, link.is_active)}
-          className={`relative h-6 w-11 rounded-full p-1 transition-colors ${
-            link.is_active
+          className={`relative h-6 w-11 rounded-full p-1 transition-colors ${link.is_active
               ? "bg-emerald-500"
               : "bg-vasta-muted/30"
-          }`}
+            }`}
         >
           <div
-            className={`h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
-              link.is_active ? "translate-x-5" : "translate-x-0"
-            }`}
+            className={`h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${link.is_active ? "translate-x-5" : "translate-x-0"
+              }`}
           />
         </button>
       </div>
@@ -104,8 +103,13 @@ export default function LinksPage() {
   const { user } = useAuth()
   const [links, setLinks] = useState<LinkItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  // Edit Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingLink, setEditingLink] = useState<LinkItem | null>(null)
+
+  // Add Modal State
+  const [addModalState, setAddModalState] = useState<{ isOpen: boolean, initialState?: { view: 'gallery' | 'form', url?: string, title?: string } }>({ isOpen: false })
 
   const supabase = createClient()
 
@@ -123,7 +127,7 @@ export default function LinksPage() {
       .select('*')
       .eq('profile_id', user.id)
       .order('display_order', { ascending: true })
-    
+
     if (data) setLinks(data)
     setLoading(false)
   }
@@ -131,6 +135,32 @@ export default function LinksPage() {
   useEffect(() => {
     fetchLinks()
   }, [user])
+
+  // Global Paste Listener
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      // Ignore if target is input/textarea/editable
+      const target = e.target as HTMLElement
+      if (['INPUT', 'TEXTAREA'].includes(target.tagName) || target.isContentEditable) {
+        return
+      }
+
+      const text = e.clipboardData?.getData('text')
+      if (text && isValidUrl(text)) {
+        e.preventDefault()
+        setAddModalState({
+          isOpen: true,
+          initialState: { view: 'form', url: text }
+        })
+      }
+    }
+
+    // Add listener to window
+    window.addEventListener('paste', handlePaste)
+
+    // Cleanup
+    return () => window.removeEventListener('paste', handlePaste)
+  }, []) // Empty dependency array = run once on mount
 
   const toggleActive = async (id: number, currentState: boolean) => {
     // Optimistic update
@@ -153,20 +183,14 @@ export default function LinksPage() {
         const newIndex = items.findIndex((item) => item.id === over?.id)
         const newItems = arrayMove(items, oldIndex, newIndex)
 
-        // Persist new order
-        // We update the display_order for all affected items
-        // Strategy: update locally, then sync entire list order to DB
-        // Optimization: only update validation logic if needed, but for small lists (links < 20), Promise.all is fine.
-        
         const updates = newItems.map((item, index) => ({
-            id: item.id,
-            display_order: index,
-            // we have to be careful not to overwrite other fields if we use upsert, but update is safer loop
+          id: item.id,
+          display_order: index,
         }))
 
-        // Fire and forget (or handle error quietly)
+        // Fire and forget
         updates.forEach(upd => {
-            supabase.from('links').update({ display_order: upd.display_order }).eq('id', upd.id).then()
+          supabase.from('links').update({ display_order: upd.display_order }).eq('id', upd.id).then()
         })
 
         return newItems
@@ -175,17 +199,16 @@ export default function LinksPage() {
   }
 
   const openNewLinkModal = () => {
-    setEditingLink(null)
-    setIsModalOpen(true)
+    setAddModalState({ isOpen: true, initialState: { view: 'gallery' } })
   }
 
   const openEditModal = (link: LinkItem) => {
     setEditingLink(link)
-    setIsModalOpen(true)
+    setIsEditModalOpen(true)
   }
 
   if (loading) {
-     return <div className="flex h-64 items-center justify-center"><Loader2 className="animate-spin text-vasta-primary" /></div>
+    return <div className="flex h-64 items-center justify-center"><Loader2 className="animate-spin text-vasta-primary" /></div>
   }
 
   return (
@@ -195,7 +218,7 @@ export default function LinksPage() {
           <h1 className="text-2xl font-bold text-vasta-text">Meus links</h1>
           <p className="text-sm text-vasta-muted">Organize e gerencie seus links públicos</p>
         </div>
-        <button 
+        <button
           onClick={openNewLinkModal}
           className="flex items-center justify-center gap-2 rounded-2xl bg-vasta-primary px-6 py-3 text-sm font-bold text-white transition-all hover:bg-vasta-primary-soft shadow-lg shadow-vasta-primary/20 hover:scale-105 active:scale-95"
         >
@@ -220,11 +243,11 @@ export default function LinksPage() {
         <div className="grid gap-4">
           <SortableContext items={links.map(l => l.id)} strategy={verticalListSortingStrategy}>
             {links.map(link => (
-              <SortableLinkItem 
-                 key={link.id} 
-                 link={link} 
-                 toggleActive={toggleActive} 
-                 onEdit={openEditModal}
+              <SortableLinkItem
+                key={link.id}
+                link={link}
+                toggleActive={toggleActive}
+                onEdit={openEditModal}
               />
             ))}
           </SortableContext>
@@ -234,26 +257,34 @@ export default function LinksPage() {
       {links.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-vasta-border py-20 text-center bg-vasta-surface/30">
           <div className="h-16 w-16 rounded-full bg-vasta-surface-soft flex items-center justify-center mb-4 text-vasta-muted">
-             <Plus size={32} />
+            <Plus size={32} />
           </div>
           <h3 className="font-bold text-vasta-text mb-1">Crie seu primeiro link</h3>
           <p className="text-sm text-vasta-muted max-w-xs mx-auto mb-6">Compartilhe seu Instagram, LinkedIn, loja ou qualquer outro site.</p>
-          <button 
-             onClick={openNewLinkModal}
-             className="text-sm font-bold text-vasta-primary hover:underline"
+          <button
+            onClick={openNewLinkModal}
+            className="text-sm font-bold text-vasta-primary hover:underline"
           >
-             Adicionar link agora
+            Adicionar link agora
           </button>
         </div>
       )}
 
-      <LinkModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+      {/* Edit Modal (Legacy/Simple) */}
+      <LinkModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
         linkToEdit={editingLink}
         onSuccess={fetchLinks}
+      />
+
+      {/* New Add Link Modal */}
+      <AddLinkModal
+        isOpen={addModalState.isOpen}
+        onClose={() => setAddModalState(prev => ({ ...prev, isOpen: false }))}
+        onSuccess={fetchLinks}
+        initialState={addModalState.initialState}
       />
     </div>
   )
 }
-
