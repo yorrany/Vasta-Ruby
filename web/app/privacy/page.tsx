@@ -15,7 +15,7 @@ export default function PrivacyPage() {
                 <div className="prose prose-slate max-w-none space-y-6">
 
                     <section>
-                        <h2 className="text-2xl font-semibold text-slate-900 mb-4">1. Introdução</h2>
+                        <h2 className="text-2xl font-semibold text-slate-900 mb-4" style={{ fontFamily: 'var(--font-sans)' }}>1. Introdução</h2>
                         <p className="text-slate-700 leading-relaxed">
                             A <strong>YORRANY MARTINS BRAGA LTDA</strong>, CNPJ sob o nº [INSERIR CNPJ], proprietária e operadora da plataforma
                             <strong> Vasta Pro</strong> ("Vasta", "nós", "nosso"), está comprometida em proteger a privacidade e os dados

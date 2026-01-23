@@ -149,6 +149,7 @@ export function Footer() {
                         <Link href="/privacy" className="text-sm text-vasta-muted hover:text-vasta-primary">Privacidade</Link>
                         <Link href="/terms" className="text-sm text-vasta-muted hover:text-vasta-primary">Termos de Uso</Link>
                         <Link href="/data-deletion" className="text-sm text-vasta-muted hover:text-vasta-primary">Exclusão de Dados</Link>
+                        <Link href="/instagram-data" className="text-sm text-vasta-muted hover:text-vasta-primary">Dados do Instagram</Link>
                         <Link href="/legal/lgpd" className="text-sm text-vasta-muted hover:text-vasta-primary">Padrão LGPD</Link>
                         <Link href="/legal/cookies" className="text-sm text-vasta-muted hover:text-vasta-primary">Cookies</Link>
                     </div>
