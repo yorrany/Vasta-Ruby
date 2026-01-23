@@ -88,84 +88,90 @@ const fetchInstagramMedia = async (accessToken: string, instagramBusinessId: str
 
   const data = await res.json();
   console.log('[Instagram Service] Media Response Data (count):', data.data?.length);
-  if (data.data?.length === 0) {
-      console.log('[Instagram Service] Full Response Body:', JSON.stringify(data));
+  
+  if (!data.data || data.data.length === 0) {
+      const debugMsg = JSON.stringify(data);
+      console.log('[Instagram Service] Full Response Body:', debugMsg);
+      // Throw error to show in UI
+      throw new Error(`Instagram API returned 0 items. Body: ${debugMsg.substring(0, 200)}...`);
   }
   
   return data.data as InstagramMedia[];
 };
 
 export async function getInstagramFeed(userId: string): Promise<InstagramMedia[] | null> {
-  // Use Service Role to bypass RLS, because this might be called by a public visitor checking a profile
-  // and the 'instagram_connections' table is likely private to the user.
-  let supabase;
-  
-  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      const { createClient: createClientJS } = require('@supabase/supabase-js');
-      supabase = createClientJS(
-          process.env.NEXT_PUBLIC_SUPABASE_URL, 
-          process.env.SUPABASE_SERVICE_ROLE_KEY
-      );
+  const supabase = await createClient();
+  if (!supabase) return null;
+
+  let accessToken = '';
+  let instagramUserId = '';
+
+  // STRATEGY 1: Try Secure RPC (Best Practice for Public Feed)
+  const { data: rpcData, error: rpcError } = await supabase
+    .rpc('get_instagram_connection_secure', { target_user_id: userId });
+
+  if (!rpcError && rpcData && rpcData.length > 0) {
+      accessToken = rpcData[0].access_token;
+      instagramUserId = rpcData[0].instagram_user_id;
   } else {
-      supabase = await createClient();
+      // STRATEGY 2: Fallback to Service Role (If RPC not created yet)
+      if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+          const { createClient: createClientJS } = require('@supabase/supabase-js');
+          const adminSupabase = createClientJS(
+              process.env.NEXT_PUBLIC_SUPABASE_URL, 
+              process.env.SUPABASE_SERVICE_ROLE_KEY
+          );
+          const { data: adminData } = await adminSupabase
+            .from('instagram_connections')
+            .select('access_token, instagram_user_id')
+            .eq('user_id', userId)
+            .single();
+          
+          if (adminData) {
+              accessToken = adminData.access_token;
+              instagramUserId = adminData.instagram_user_id;
+          }
+      } 
+      
+      // STRATEGY 3: Try standard client (Works only if User is Self or RLS open)
+      if (!accessToken) {
+          const { data: stdData } = await supabase
+            .from('instagram_connections')
+            .select('access_token, instagram_user_id')
+            .eq('user_id', userId)
+            .single();
+            
+          if (stdData) {
+              accessToken = stdData.access_token;
+              instagramUserId = stdData.instagram_user_id;
+          }
+      }
   }
-  
-  if (!supabase) {
-    console.error('Supabase client failed to initialize in getInstagramFeed');
+
+  if (!accessToken || !instagramUserId) {
+    console.warn(`[Instagram] Connection not found for user ${userId}. RPC Failed: ${!!rpcError}. Admin Key Present: ${!!process.env.SUPABASE_SERVICE_ROLE_KEY}`);
     return null;
   }
 
-  // Debug Log
-  console.log(`[Instagram Service] Fetching feed for user: ${userId}`);
-
-  // 1. Get Connection Details with Token (Bypassing RLS if using Service Role)
-  const { data: connection, error: dbError } = await supabase
-    .from('instagram_connections')
-    .select('access_token, instagram_user_id')
-    .eq('user_id', userId)
-    .single();
-
-  if (dbError || !connection) {
-    const isAdmin = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
-    console.log('[Instagram Service] No connection found or DB Error:', dbError, 'Is Admin:', isAdmin);
-    
-    // If error is "PGRST116" (JSON object), it means no rows (not found).
-    if (dbError && dbError.code !== 'PGRST116') {
-         throw new Error(`Database Error: ${dbError.message} (Admin: ${isAdmin})`);
-    }
-    // If just not found (or hidden by RLS)
-    throw new Error(`Connection not found for user ${userId}. (Admin Mode: ${isAdmin}). If false, RLS is hiding it.`);
-  }
-
-  // ... rest of the function remains same ...
-  console.log('[Instagram Service] Connection found. ID:', connection.instagram_user_id);
-
   try {
-    const decryptedToken = decrypt(connection.access_token);
+    const decryptedToken = decrypt(accessToken);
+    const mediaItems = await fetchInstagramMedia(decryptedToken, instagramUserId, userId);
 
-    // 2. Fetch Media from Instagram (Cached via fetch)
-    const mediaItems = await fetchInstagramMedia(decryptedToken, connection.instagram_user_id, userId);
-
-    // 3. Fetch Custom Links from Supabase
     const { data: links } = await supabase
       .from('instagram_post_links')
       .select('instagram_media_id, target_url')
       .eq('user_id', userId);
 
-    // 4. Merge Data
     const linkMap = new Map(links?.map((l: any) => [l.instagram_media_id, l.target_url]) || []);
 
-    const mergedMedia = mediaItems.map(item => ({
+    return mediaItems.map(item => ({
       ...item,
       custom_link: linkMap.get(item.id) || undefined
     }));
 
-    return mergedMedia;
-
   } catch (error) {
     console.error('[Instagram Service] Error getting Instagram feed:', error);
-    // Throw error so UI sees distinct message instead of generic "empty"
-    throw error;
+    return []; // Return empty array on API error to avoid crashing page
   }
 }
 
