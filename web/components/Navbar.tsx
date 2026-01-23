@@ -3,13 +3,13 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { 
-  Menu, 
-  X, 
-  ChevronDown, 
-  User, 
-  Settings, 
-  LogOut, 
+import {
+  Menu,
+  X,
+  ChevronDown,
+  User,
+  Settings,
+  LogOut,
   ArrowRight,
   LayoutDashboard
 } from "lucide-react"
@@ -22,7 +22,7 @@ export function Navbar() {
   const [loading, setLoading] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  
+
   const { openAuthModal } = useAuth()
   const supabase = createClient()
   const router = useRouter()
@@ -59,6 +59,20 @@ export function Navbar() {
     setIsMobileMenuOpen(false)
   }
 
+  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
+    if (href.startsWith("#")) {
+      e.preventDefault();
+      const element = document.querySelector(href);
+      if (element) {
+        const offsetTop = element.getBoundingClientRect().top + window.scrollY - 80; // Offset for sticky navbar
+        window.scrollTo({
+          top: offsetTop,
+          behavior: "smooth"
+        });
+      }
+    }
+  };
+
   return (
     <header className="fixed top-0 z-50 w-full border-b border-vasta-border bg-vasta-bg/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-6">
@@ -70,9 +84,10 @@ export function Navbar() {
         {/* Desktop Nav */}
         <nav className="hidden items-center gap-10 text-sm font-medium text-vasta-muted md:flex">
           {navLinks.map((link) => (
-            <Link 
-              key={link.name} 
+            <Link
+              key={link.name}
               href={link.href}
+              onClick={(e) => handleScroll(e, link.href)}
               className="transition-colors hover:text-vasta-text"
             >
               {link.name}
@@ -88,7 +103,7 @@ export function Navbar() {
             <>
               {user ? (
                 <div className="relative">
-                  <button 
+                  <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                     className="flex items-center gap-2 rounded-full border border-vasta-border bg-vasta-surface p-1.5 transition-colors hover:border-vasta-border-dark"
                   >
@@ -104,14 +119,14 @@ export function Navbar() {
                       <div className="px-3 py-2 text-xs font-bold text-vasta-muted uppercase tracking-widest">
                         Conta
                       </div>
-                      <Link 
+                      <Link
                         href="/dashboard"
                         className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-vasta-text-soft transition-colors hover:bg-vasta-surface-soft hover:text-vasta-text"
                       >
                         <LayoutDashboard className="h-4 w-4" />
                         Dashboard
                       </Link>
-                      <Link 
+                      <Link
                         href="/settings"
                         className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-vasta-text-soft transition-colors hover:bg-vasta-surface-soft hover:text-vasta-text"
                       >
@@ -119,7 +134,7 @@ export function Navbar() {
                         Configurações
                       </Link>
                       <div className="my-1 border-t border-vasta-border" />
-                      <button 
+                      <button
                         onClick={handleLogout}
                         className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-red-400 transition-colors hover:bg-red-500/10"
                       >
@@ -150,7 +165,7 @@ export function Navbar() {
           )}
 
           {/* Mobile Menu Toggle */}
-          <button 
+          <button
             className="flex rounded-lg p-2 text-vasta-muted hover:bg-vasta-surface-soft hover:text-vasta-text md:hidden"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
@@ -164,10 +179,13 @@ export function Navbar() {
         <div className="fixed inset-x-0 top-[73px] z-40 h-screen border-t border-vasta-border bg-vasta-bg/95 p-6 backdrop-blur-xl animate-in slide-in-from-top duration-300 md:hidden">
           <nav className="flex flex-col gap-6">
             {navLinks.map((link) => (
-              <Link 
-                key={link.name} 
+              <Link
+                key={link.name}
                 href={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={(e) => {
+                  handleScroll(e, link.href);
+                  setIsMobileMenuOpen(false);
+                }}
                 className="text-lg font-semibold text-vasta-text-soft"
               >
                 {link.name}
@@ -179,14 +197,14 @@ export function Navbar() {
               </div>
               {!user && (
                 <>
-                  <button 
+                  <button
                     onClick={() => openAuth('login')}
                     className="flex items-center justify-between rounded-xl border border-vasta-border p-4 text-vasta-text"
                   >
                     Entrar na minha conta
                     <ArrowRight className="h-5 w-5 opacity-50" />
                   </button>
-                  <button 
+                  <button
                     onClick={() => openAuth('signup')}
                     className="flex items-center justify-between rounded-xl bg-vasta-text p-4 font-bold text-vasta-bg"
                   >
@@ -196,13 +214,13 @@ export function Navbar() {
                 </>
               )}
               {user && (
-                <Link 
-                   href="/dashboard"
-                   onClick={() => setIsMobileMenuOpen(false)}
-                   className="flex items-center justify-between rounded-xl bg-vasta-primary p-4 font-bold text-white"
+                <Link
+                  href="/dashboard"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-between rounded-xl bg-vasta-primary p-4 font-bold text-white"
                 >
-                   Ir para o Dashboard
-                   <LayoutDashboard className="h-5 w-5" />
+                  Ir para o Dashboard
+                  <LayoutDashboard className="h-5 w-5" />
                 </Link>
               )}
             </div>

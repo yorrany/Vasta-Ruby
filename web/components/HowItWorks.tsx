@@ -28,7 +28,7 @@ export function HowItWorks() {
   ]
 
   return (
-    <section id="como-funciona" className="relative border-b border-vasta-border bg-vasta-bg py-24 md:py-32">
+    <section id="features" className="relative border-b border-vasta-border bg-vasta-bg py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-4">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-vasta-text md:text-4xl">
