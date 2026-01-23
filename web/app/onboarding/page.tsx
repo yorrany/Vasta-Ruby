@@ -21,6 +21,7 @@ type Step = 'USERNAME' | 'BIO' | 'THEME' | 'FINISH'
 export default function OnboardingPage() {
     const [step, setStep] = useState<Step>('USERNAME')
     const [loading, setLoading] = useState(false)
+    const [authLoading, setAuthLoading] = useState(true)
     const [checkingUsername, setCheckingUsername] = useState(false)
     const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null)
 
@@ -38,13 +39,20 @@ export default function OnboardingPage() {
         // Check if user is logged in
         const checkUser = async () => {
             const { data: { user } } = await supabase.auth.getUser()
+
             if (!user) {
-                router.push("/login")
-                return
+                // Double check with session
+                const { data: { session } } = await supabase.auth.getSession()
+                if (!session) {
+                    router.push("/login")
+                    return
+                }
             }
 
+            setAuthLoading(false)
+
             // Pre-fill email prefix as suggested username
-            if (user.email && !formData.username) {
+            if (user?.email && !formData.username) {
                 const prefix = user.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
                 setFormData(prev => ({ ...prev, username: prefix, display_name: user.user_metadata?.full_name || prefix }))
             }
@@ -101,6 +109,15 @@ export default function OnboardingPage() {
                 router.push("/dashboard")
             }, 2000)
         }
+    }
+
+    if (authLoading) {
+        return (
+            <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-vasta-primary mb-4" />
+                <p className="text-slate-400 text-sm font-bold animate-pulse">Sincronizando sua conta...</p>
+            </div>
+        )
     }
 
     return (

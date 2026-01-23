@@ -5,7 +5,10 @@ export async function middleware(request: NextRequest) {
   // Enforce www for production
   const host = request.headers.get("host") || "";
   if (host === "vasta.pro") {
-    return NextResponse.redirect(new URL(`https://www.vasta.pro${request.nextUrl.pathname}`, request.url), 301);
+    const url = request.nextUrl.clone();
+    url.host = "www.vasta.pro";
+    url.protocol = "https:";
+    return NextResponse.redirect(url, 301);
   }
 
   return await updateSession(request);

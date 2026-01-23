@@ -29,16 +29,20 @@ export default function LoginPage() {
   const supabase = createClient()
   const router = useRouter()
 
-  // Auto-redirect if user is already logged in
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        router.push("/dashboard")
+    const searchParams = new URLSearchParams(window.location.search)
+    const error = searchParams.get('error')
+    const errorDescription = searchParams.get('error_description')
+
+    if (error) {
+      if (error === 'auth-code-error') {
+        setError('Erro ao validar código de acesso. Tente novamente.')
+      } else {
+        setError(errorDescription || error)
       }
     }
-    checkUser()
-  }, [supabase, router])
+  }, [])
+
 
   const handleContinueEmail = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -1,12 +1,11 @@
-
 import { NextResponse } from 'next/server'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
-  const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/dashboard'
+  const requestUrl = new URL(request.url)
+  const code = requestUrl.searchParams.get('code')
+  const next = requestUrl.searchParams.get('next') ?? '/dashboard'
 
   if (code) {
     const cookieStore = await cookies()
@@ -27,12 +26,28 @@ export async function GET(request: Request) {
         },
       }
     )
+    
     const { error } = await supabase.auth.exchangeCodeForSession(code)
+    
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+      // Check if user has a profile and is onboarded
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('bio')
+          .eq('id', user.id)
+          .maybeSingle()
+
+        // If no profile or no bio, send to onboarding
+        if (!profile || !profile.bio) {
+          return NextResponse.redirect(new URL('/onboarding', request.url))
+        }
+      }
+      return NextResponse.redirect(new URL(next, request.url))
     }
   }
 
-  // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`)
+  // Return to login with error if something failed
+  return NextResponse.redirect(new URL('/login?error=auth-code-error', request.url))
 }
