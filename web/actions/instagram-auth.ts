@@ -11,7 +11,7 @@ import { saveInstagramConnection } from '@/lib/instagram-service';
 
 const FB_APP_ID = process.env.INSTAGRAM_CLIENT_ID; // Using env var designated for ID
 const FB_APP_SECRET = process.env.INSTAGRAM_CLIENT_SECRET; // Using env var designated for Secret
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://vasta.pro';
 const REDIRECT_URI = `${APP_URL}/api/auth/instagram/callback`;
 
 export async function initiateInstagramAuth() {
@@ -97,6 +97,11 @@ export async function processInstagramCallback(code: string) {
 
   // 4. Save to Database
   const supabase = await createClient();
+
+  if (!supabase) {
+    throw new Error('Falha ao inicializar cliente Supabase.');
+  }
+
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
