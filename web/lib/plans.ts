@@ -91,6 +91,14 @@ export function getPlanByCode(code: PlanCode): Plan | undefined {
 }
 
 export function getStripePriceId(planCode: PlanCode, billingCycle: 'monthly' | 'yearly'): string | undefined {
-  const plan = getPlanByCode(planCode)
-  return plan?.stripePriceId?.[billingCycle]
+  // Ler diretamente de process.env em runtime
+  const priceIds: Record<string, string | undefined> = {
+    'pro_monthly': process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY,
+    'pro_yearly': process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_YEARLY,
+    'business_monthly': process.env.NEXT_PUBLIC_STRIPE_PRICE_BUSINESS_MONTHLY,
+    'business_yearly': process.env.NEXT_PUBLIC_STRIPE_PRICE_BUSINESS_YEARLY,
+  }
+
+  const key = `${planCode}_${billingCycle}`
+  return priceIds[key]
 }

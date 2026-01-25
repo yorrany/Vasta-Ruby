@@ -79,7 +79,13 @@ export async function POST(request: NextRequest) {
     // Obter o price ID do Stripe
     const priceId = getStripePriceId(planCode as PlanCode, billingCycle)
 
+    console.log('[DEBUG] planCode:', planCode)
+    console.log('[DEBUG] billingCycle:', billingCycle)
+    console.log('[DEBUG] priceId:', priceId)
+    console.log('[DEBUG] NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY:', process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY)
+
     if (!priceId) {
+      console.error('[ERROR] Price ID não encontrado para:', { planCode, billingCycle })
       return NextResponse.json(
         { error: 'Price ID do Stripe não configurado para este plano' },
         { status: 500 }
