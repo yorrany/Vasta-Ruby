@@ -25,7 +25,7 @@ interface InstagramMedia {
     permalink: string;
 }
 
-export function InstagramFeedSection({ userId, theme }: { userId: string, theme: string }) {
+export function InstagramFeedSection({ userId, theme, isPreview = false }: { userId: string, theme: string, isPreview?: boolean }) {
     const [feed, setFeed] = useState<InstagramMedia[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -58,6 +58,12 @@ export function InstagramFeedSection({ userId, theme }: { userId: string, theme:
     const isNeo = theme === 'neo';
     const isNoir = theme === 'noir';
 
+    const handleLinkClick = (e: React.MouseEvent) => {
+        if (isPreview) {
+            e.preventDefault();
+        }
+    }
+
     return (
         <div className={`mt-12 lg:mt-0 ${loading ? 'opacity-50' : 'opacity-100'} transition-opacity`}>
             <h3 className={`text-center lg:text-left text-sm font-bold uppercase tracking-widest opacity-50 mb-6 font-sans flex items-center gap-4 ${isNeo ? 'text-black' : ''}`}>
@@ -73,6 +79,7 @@ export function InstagramFeedSection({ userId, theme }: { userId: string, theme:
                         href={post.custom_link || post.permalink}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={handleLinkClick}
                         className={`group relative aspect-square block overflow-hidden bg-gray-100 dark:bg-gray-800 ${isNeo ? 'border border-black rounded-none' : ''}`}
                     >
                         {post.media_type === 'VIDEO' ? (
@@ -106,6 +113,7 @@ export function InstagramFeedSection({ userId, theme }: { userId: string, theme:
                         href={`https://instagram.com/${feed[0].username}`}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={handleLinkClick}
                         className={`
                             flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium transition-all
                             ${isNeo

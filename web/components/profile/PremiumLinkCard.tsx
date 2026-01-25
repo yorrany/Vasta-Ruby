@@ -13,9 +13,10 @@ interface PremiumLinkCardProps {
     theme: 'neo' | 'noir' | 'bento'
     themeConfig: { link: string;[key: string]: any }
     onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void
+    isPreview?: boolean
 }
 
-export function PremiumLinkCard({ link, theme, themeConfig, onClick }: PremiumLinkCardProps) {
+export function PremiumLinkCard({ link, theme, themeConfig, onClick, isPreview = false }: PremiumLinkCardProps) {
     const [ogImage, setOgImage] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
 
@@ -62,15 +63,16 @@ export function PremiumLinkCard({ link, theme, themeConfig, onClick }: PremiumLi
             <div className={`w-full py-4 px-2 ${theme === 'neo' ? 'text-black' : theme === 'noir' ? 'text-white' : 'text-gray-800'}`}>
                 <h2 className={`
                     text-center font-bold mb-1
-                    ${theme === 'neo' ? 'text-2xl uppercase tracking-tighter' : ''}
-                    ${theme === 'noir' ? 'text-2xl font-serif tracking-widest' : ''}
-                    ${theme === 'bento' ? 'text-xl tracking-tight text-gray-900' : ''}
+                    ${theme === 'neo' ? (isPreview ? 'text-lg uppercase tracking-tighter' : 'text-2xl uppercase tracking-tighter') : ''}
+                    ${theme === 'noir' ? (isPreview ? 'text-lg font-serif tracking-widest' : 'text-2xl font-serif tracking-widest') : ''}
+                    ${theme === 'bento' ? (isPreview ? 'text-base tracking-tight text-gray-900' : 'text-xl tracking-tight text-gray-900') : ''}
                 `}>
                     {link.title}
                 </h2>
                 {subtitle && (
                     <p className={`
-                        text-center text-sm
+                        text-center
+                        ${isPreview ? 'text-xs' : 'text-sm'}
                         ${theme === 'neo' ? 'font-medium uppercase tracking-wide opacity-80 border-b-4 border-black pb-4' : ''}
                         ${theme === 'noir' ? 'font-light tracking-wide opacity-60 border-b border-white/20 pb-4' : ''}
                         ${theme === 'bento' ? 'text-gray-500 pb-2' : ''}
@@ -87,8 +89,9 @@ export function PremiumLinkCard({ link, theme, themeConfig, onClick }: PremiumLi
         return (
             <div className={`w-full px-4 -mt-2 mb-4 text-center
                 ${theme === 'neo' ? 'font-medium' : ''}
-                ${theme === 'noir' ? 'text-white/60 font-light tracking-wide text-sm' : ''}
-                ${theme === 'bento' ? 'text-gray-500 text-sm' : ''}
+                ${theme === 'noir' ? 'text-white/60 font-light tracking-wide' : ''}
+                ${theme === 'bento' ? 'text-gray-500' : ''}
+                ${isPreview ? 'text-xs' : 'text-sm'}
             `}>
                 <p>{link.title}</p>
             </div>
@@ -153,7 +156,11 @@ export function PremiumLinkCard({ link, theme, themeConfig, onClick }: PremiumLi
 
             {/* Content Area */}
             <div className={`flex-1 flex flex-col justify-center z-10 px-6 py-4 ${theme === 'neo' ? 'pl-6' : ''}`}>
-                <span className={`leading-tight line-clamp-2 ${theme === 'neo' ? 'text-xl font-black uppercase text-left tracking-tight decoration-2 underline-offset-2' : theme === 'noir' ? 'text-lg font-serif tracking-wide text-white text-left drop-shadow-md group-hover:text-white' : 'text-lg font-bold text-gray-800 text-left'}`}>
+                <span className={`leading-tight line-clamp-2 
+                    ${theme === 'neo' ? (isPreview ? 'text-sm font-black uppercase text-left tracking-tight decoration-2 underline-offset-2' : 'text-xl font-black uppercase text-left tracking-tight decoration-2 underline-offset-2') : ''} 
+                    ${theme === 'noir' ? (isPreview ? 'text-sm font-serif tracking-wide text-white text-left drop-shadow-md group-hover:text-white' : 'text-lg font-serif tracking-wide text-white text-left drop-shadow-md group-hover:text-white') : ''} 
+                    ${theme === 'bento' ? (isPreview ? 'text-sm font-bold text-gray-800 text-left' : 'text-lg font-bold text-gray-800 text-left') : ''}
+                `}>
                     {link.title}
                 </span>
 

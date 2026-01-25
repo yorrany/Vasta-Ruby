@@ -692,6 +692,10 @@ function PreviewMockup({ settings }: { settings: AppearanceSettings }) {
     }
   });
 
+  const handleMockupClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+  }
+
   return (
     <div className="flex justify-center sticky top-0">
       <div
@@ -790,6 +794,8 @@ function PreviewMockup({ settings }: { settings: AppearanceSettings }) {
                     linkStyle={settings.linkStyle}
                     accentColor={settings.accentColor}
                     openForm={() => { }}
+                    onLinkClick={handleMockupClick}
+                    isPreview={true}
                   />
                 )
               }
@@ -829,6 +835,8 @@ function PreviewMockup({ settings }: { settings: AppearanceSettings }) {
                       link={link}
                       theme={theme as any}
                       themeConfig={currentThemeConfig}
+                      onClick={handleMockupClick}
+                      isPreview={true}
                     />
                   </div>
                 )
@@ -864,7 +872,7 @@ function PreviewMockup({ settings }: { settings: AppearanceSettings }) {
           {/* Instagram Section */}
           {user && (
             <div className="w-full px-2 mt-4 scale-90 origin-top">
-              <InstagramFeedSection userId={user.id} theme={theme} />
+              <InstagramFeedSection userId={user.id} theme={theme} isPreview={true} />
             </div>
           )}
 

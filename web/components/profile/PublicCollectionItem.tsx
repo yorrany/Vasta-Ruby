@@ -20,9 +20,11 @@ interface PublicCollectionItemProps {
     linkStyle: string
     accentColor: string
     openForm: (id: number) => void
+    onLinkClick?: (e: React.MouseEvent) => void
+    isPreview?: boolean
 }
 
-export function PublicCollectionItem({ link, allLinks, theme, themeConfig, linkStyle, accentColor, openForm }: PublicCollectionItemProps) {
+export function PublicCollectionItem({ link, allLinks, theme, themeConfig, linkStyle, accentColor, openForm, onLinkClick, isPreview = false }: PublicCollectionItemProps) {
     const [isOpen, setIsOpen] = useState(false)
 
     // Parse collection data
@@ -80,17 +82,17 @@ export function PublicCollectionItem({ link, allLinks, theme, themeConfig, linkS
                 <div className="flex items-center gap-3">
                     <div className={`transition-transform duration-300 ${isOpen ? 'rotate-90' : 'rotate-0'}`}>
                         {theme === 'neo' ? (
-                            <ChevronRight size={24} strokeWidth={3} />
+                            <ChevronRight size={isPreview ? 20 : 24} strokeWidth={3} />
                         ) : (
-                            <ChevronRight size={20} />
+                            <ChevronRight size={isPreview ? 16 : 20} />
                         )}
                     </div>
                     <div>
-                        <h3 className={`font-bold leading-tight ${theme === 'neo' ? 'text-xl uppercase' : 'text-lg'}`}>
+                        <h3 className={`font-bold leading-tight ${theme === 'neo' ? (isPreview ? 'text-lg uppercase' : 'text-xl uppercase') : (isPreview ? 'text-base' : 'text-lg')}`}>
                             {link.title}
                         </h3>
                         {collectionData.description && (
-                            <p className={`text-sm mt-1 opacity-70 ${theme === 'noir' ? 'font-light' : ''}`}>
+                            <p className={`mt-1 opacity-70 ${theme === 'noir' ? 'font-light' : ''} ${isPreview ? 'text-xs' : 'text-sm'}`}>
                                 {collectionData.description}
                             </p>
                         )}
@@ -112,38 +114,54 @@ export function PublicCollectionItem({ link, allLinks, theme, themeConfig, linkS
                 `}
             >
                 <div className={`flex flex-col gap-3 p-4 pt-0 ${theme === 'neo' ? 'px-6 pb-6 border-t-2 border-black' : ''}`}>
-                    {childLinks.map((childLink) => (
-                        <div key={childLink.id} className="w-full">
-                            {themeConfig ? (
-                                <PremiumLinkCard
-                                    link={childLink}
-                                    theme={theme}
-                                    themeConfig={{
-                                        ...themeConfig,
-                                        // Tweaking child styles to visually nested look if needed, 
-                                        // currently just passing standard config which is fine.
-                                        link: themeConfig.link.replace('shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]', '') // Remove heavy shadow for nested items in Neo to avoid clutter?
-                                    }}
-                                    onClick={childLink.url.startsWith('#form:') ? (e) => { e.preventDefault(); openForm(childLink.id) } : undefined}
-                                />
-                            ) : (
-                                <a
-                                    href={childLink.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={childLink.url.startsWith('#form:') ? (e) => { e.preventDefault(); openForm(childLink.id) } : undefined}
-                                    className={`
+                    {childLinks.map((childLink) => {
+                        const handleClick = (e: React.MouseEvent) => {
+                            if (onLinkClick) {
+                                onLinkClick(e)
+                                return
+                            }
+                            if (childLink.url.startsWith('#form:')) {
+                                e.preventDefault()
+                                openForm(childLink.id)
+                            }
+                        }
+
+                        return (
+                            <div key={childLink.id} className="w-full">
+                                {themeConfig ? (
+                                    <PremiumLinkCard
+                                        link={childLink}
+                                        theme={theme}
+                                        themeConfig={{
+                                            ...themeConfig,
+                                            // Tweaking child styles to visually nested look if needed, 
+                                            // currently just passing standard config which is fine.
+                                            link: themeConfig.link.replace('shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]', '') // Remove heavy shadow for nested items in Neo to avoid clutter?
+                                        }}
+                                        onClick={handleClick}
+                                        isPreview={isPreview}
+                                    />
+                                ) : (
+                                    <a
+                                        href={childLink.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={handleClick}
+                                        className={`
                                         block w-full p-4 rounded-xl transition-all duration-200
                                         bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20
                                         flex items-center justify-between group/link
                                     `}
-                                >
-                                    <span className="font-medium text-base">{childLink.title}</span>
-                                    {childLink.icon}
-                                </a>
-                            )}
-                        </div>
-                    ))}
+                                    >
+                                        <span className="font-medium text-base">{childLink.title}</span>
+                                        <div className="text-current opacity-70">
+                                            {childLink.icon}
+                                        </div>
+                                    </a>
+                                )}
+                            </div>
+                        )
+                    })}
                 </div>
             </div>
         </div>
