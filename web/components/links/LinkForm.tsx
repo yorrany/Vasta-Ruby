@@ -14,7 +14,14 @@ interface LinkFormProps {
     onCancel?: () => void
 }
 
-const PLATFORMS: Record<string, { label: string, prefix: string, placeholder: string }> = {
+interface PlatformConfig {
+    label: string
+    prefix: string
+    placeholder: string
+    noUrl?: boolean
+}
+
+const PLATFORMS: Record<string, PlatformConfig> = {
     instagram: { label: 'Usuário', prefix: 'https://instagram.com/', placeholder: 'usuario' },
     tiktok: { label: 'Usuário', prefix: 'https://tiktok.com/@', placeholder: 'usuario' },
     twitter: { label: 'Usuário', prefix: 'https://x.com/', placeholder: 'usuario' },
@@ -23,6 +30,8 @@ const PLATFORMS: Record<string, { label: string, prefix: string, placeholder: st
     whatsapp: { label: 'Número', prefix: 'https://wa.me/', placeholder: '5511999999999' },
     email: { label: 'Email', prefix: 'mailto:', placeholder: 'nome@exemplo.com' },
     spotify: { label: 'Link', prefix: 'https://open.spotify.com/', placeholder: 'Link do Spotify' },
+    header: { label: 'Texto do Cabeçalho', prefix: 'header://', placeholder: 'Seu Cabeçalho', noUrl: true },
+    text: { label: 'Texto', prefix: 'text://', placeholder: 'Seu texto aqui', noUrl: true },
 }
 
 export function LinkForm({ initialTitle = "", initialUrl = "", linkId, platform, onSuccess, onCancel }: LinkFormProps) {
@@ -44,8 +53,9 @@ export function LinkForm({ initialTitle = "", initialUrl = "", linkId, platform,
         }
         // If platform exists, maybe set title default?
         if (platform && !initialTitle && !title) {
-            // Capitalize first letter
-            setTitle(platform.charAt(0).toUpperCase() + platform.slice(1))
+            if (platform === 'header') setTitle('Novo Título')
+            else if (platform === 'text') setTitle('Novo Texto')
+            else setTitle(platform.charAt(0).toUpperCase() + platform.slice(1))
         }
     }, [platform, initialUrl])
 
@@ -59,19 +69,23 @@ export function LinkForm({ initialTitle = "", initialUrl = "", linkId, platform,
 
             // Smart URL construction
             if (platformConfig) {
-                // Remove prefix if user pasted full URL (basic check)
-                // e.g. user pasted https://instagram.com/user -> we want just 'user' logic or handle it gracefully
-                // Easier: Only prepend if it doesn't look like a URL
-                if (platform === 'email') {
-                    if (!finalUrl.startsWith('mailto:')) finalUrl = `mailto:${finalUrl}`
+                if (platformConfig.noUrl) {
+                    finalUrl = platformConfig.prefix // e.g. 'header://'
                 } else {
-                    const isUrl = finalUrl.startsWith('http') || finalUrl.includes('.com')
-                    if (!isUrl) {
-                        // Clean @ if present for some platforms
-                        if ((platform === 'tiktok' || platform === 'youtube' || platform === 'twitter' || platform === 'instagram') && finalUrl.startsWith('@')) {
-                            finalUrl = finalUrl.substring(1)
+                    // Remove prefix if user pasted full URL (basic check)
+                    // e.g. user pasted https://instagram.com/user -> we want just 'user' logic or handle it gracefully
+                    // Easier: Only prepend if it doesn't look like a URL
+                    if (platform === 'email') {
+                        if (!finalUrl.startsWith('mailto:')) finalUrl = `mailto:${finalUrl}`
+                    } else {
+                        const isUrl = finalUrl.startsWith('http') || finalUrl.includes('.com')
+                        if (!isUrl) {
+                            // Clean @ if present for some platforms
+                            if ((platform === 'tiktok' || platform === 'youtube' || platform === 'twitter' || platform === 'instagram') && finalUrl.startsWith('@')) {
+                                finalUrl = finalUrl.substring(1)
+                            }
+                            finalUrl = `${platformConfig.prefix}${finalUrl}`
                         }
-                        finalUrl = `${platformConfig.prefix}${finalUrl}`
                     }
                 }
             } else {
@@ -126,53 +140,53 @@ export function LinkForm({ initialTitle = "", initialUrl = "", linkId, platform,
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>
                 <label className="block text-xs font-semibold text-vasta-muted uppercase mb-1.5">
-                    Título
+                    {platformConfig?.noUrl ? (platform === 'header' ? 'Texto do Título' : 'Conteúdo') : 'Título'}
                 </label>
                 <input
                     type="text"
                     required
-                    placeholder="Ex: Meu Link"
+                    placeholder={platformConfig?.placeholder || "Ex: Meu Link"}
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                     className="w-full rounded-xl border border-vasta-border bg-vasta-surface-soft px-4 py-3 text-sm text-vasta-text focus:border-vasta-primary focus:ring-1 focus:ring-vasta-primary outline-none transition-all"
                 />
             </div>
 
-            <div>
-                <label className="block text-xs font-semibold text-vasta-muted uppercase mb-1.5">
-                    {platformConfig?.label || 'URL'}
-                </label>
-                <div className="relative">
-                    {platformConfig ? (
-                        <div className="flex items-center">
-                            {/* Prefix Visual for User (optional, or just using placeholder) */}
-                            {/* Let's keep it simple with placeholder for now as requested, but smart input is mainly about logic */}
+            {!platformConfig?.noUrl && (
+                <div>
+                    <label className="block text-xs font-semibold text-vasta-muted uppercase mb-1.5">
+                        {platformConfig?.label || 'URL'}
+                    </label>
+                    <div className="relative">
+                        {platformConfig ? (
+                            <div className="flex items-center">
+                                <input
+                                    type={platform === 'email' ? "email" : "text"}
+                                    required
+                                    placeholder={platformConfig.placeholder}
+                                    value={url}
+                                    onChange={e => setUrl(e.target.value)}
+                                    className="w-full rounded-xl border border-vasta-border bg-vasta-surface-soft px-4 py-3 text-sm text-vasta-text focus:border-vasta-primary focus:ring-1 focus:ring-vasta-primary outline-none transition-all"
+                                />
+                            </div>
+                        ) : (
                             <input
-                                type={platform === 'email' ? "email" : "text"}
+                                type="text"
                                 required
-                                placeholder={platformConfig.placeholder}
+                                placeholder="https://..."
                                 value={url}
                                 onChange={e => setUrl(e.target.value)}
                                 className="w-full rounded-xl border border-vasta-border bg-vasta-surface-soft px-4 py-3 text-sm text-vasta-text focus:border-vasta-primary focus:ring-1 focus:ring-vasta-primary outline-none transition-all"
                             />
-                        </div>
-                    ) : (
-                        <input
-                            type="text"
-                            required
-                            placeholder="https://..."
-                            value={url}
-                            onChange={e => setUrl(e.target.value)}
-                            className="w-full rounded-xl border border-vasta-border bg-vasta-surface-soft px-4 py-3 text-sm text-vasta-text focus:border-vasta-primary focus:ring-1 focus:ring-vasta-primary outline-none transition-all"
-                        />
+                        )}
+                    </div>
+                    {platformConfig && (
+                        <p className="text-[10px] text-vasta-muted mt-1.5 ml-1">
+                            Digite apenas o {platformConfig.label.toLowerCase()}.
+                        </p>
                     )}
                 </div>
-                {platformConfig && (
-                    <p className="text-[10px] text-vasta-muted mt-1.5 ml-1">
-                        Digite apenas o {platformConfig.label.toLowerCase()}.
-                    </p>
-                )}
-            </div>
+            )}
 
             <div className="pt-4">
                 {/* Cancel button removed as requested */}

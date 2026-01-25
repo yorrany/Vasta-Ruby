@@ -72,6 +72,12 @@ export function AddLinkModal({ isOpen, onClose, onSuccess, initialState }: AddLi
             case 'email':
                 setState({ view: 'form', platform: 'email' })
                 break
+            case 'header':
+                setState({ view: 'form', platform: 'header' })
+                break
+            case 'text':
+                setState({ view: 'form', platform: 'text' })
+                break
             default:
                 // Fallback for any other type to generic form if it's not handled
                 // Or just alert if unknown
