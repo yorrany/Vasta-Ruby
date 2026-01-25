@@ -267,10 +267,10 @@ export function PublicProfile({ username }: PublicProfileProps) {
             </aside>
 
             {/* Content Scroll - Centered Column */}
-            <main className="flex-1 w-full max-w-3xl px-4 py-8 lg:p-0 space-y-12 pb-32">
+            <main className="flex-1 w-full max-w-3xl px-4 py-8 lg:px-8 lg:py-12 space-y-12 pb-32">
 
                 {/* Links Section */}
-                <div className={`mx-auto ${currentThemeConfig ? 'w-full max-w-5xl' : 'max-w-2xl lg:max-w-4xl'}`}>
+                <div className="w-full mx-auto">
                     {(() => {
                         // Masonry Layout Logic: Group links by sections (Headers break the flow)
                         const renderedContent = [];
@@ -371,7 +371,7 @@ export function PublicProfile({ username }: PublicProfileProps) {
 
                 {/* Instagram Section */}
                 {profile.id && (
-                    <div className="w-full max-w-5xl mx-auto">
+                    <div className="w-full mx-auto">
                         <InstagramFeedSection userId={profile.id} theme={theme} />
                     </div>
                 )}
