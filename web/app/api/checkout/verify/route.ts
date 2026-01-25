@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-12-15.clover'
-})
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not set')
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-12-15.clover'
+  })
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,6 +22,9 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Inicializar Stripe
+    const stripe = getStripe()
 
     // Buscar sessão no Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId)

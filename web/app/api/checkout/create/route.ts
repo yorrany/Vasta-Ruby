@@ -4,9 +4,14 @@ import { createClient } from '@/lib/supabase/server'
 import { getStripePriceId } from '@/lib/plans'
 import type { PlanCode } from '@/lib/plans'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-12-15.clover'
-})
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not set')
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-12-15.clover'
+  })
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,6 +42,9 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       )
     }
+
+    // Inicializar Stripe
+    const stripe = getStripe()
 
     // Buscar ou criar customer no Stripe
     let customerId: string | undefined
