@@ -9,6 +9,7 @@ import { InstagramFeedSection } from './InstagramFeedSection'
 import { PublicProductModal } from "../products/PublicProductModal"
 import { PublicFormModal } from "../forms/PublicFormModal"
 import { ThemedCookieConsent } from "../ThemedCookieConsent"
+import { PublicCollectionItem } from "./PublicCollectionItem"
 import "../../app/globals.css" // Import global styles for Tailwind components
 
 type LinkStyle = 'glass' | 'solid' | 'outline'
@@ -363,6 +364,20 @@ export function PublicProfile({ username }: PublicProfileProps) {
                         const renderedContent = [];
                         let currentBuffer: LinkData[] = [];
 
+                        // 1. Identify content inside collections to avoid duplication
+                        const hiddenLinkIds = new Set<number>();
+                        links.forEach(link => {
+                            if (link.url.startsWith('#collection:')) {
+                                try {
+                                    const data = JSON.parse(link.url.replace('#collection:', ''));
+                                    if (Array.isArray(data.links)) {
+                                        data.links.forEach((id: number) => hiddenLinkIds.add(id));
+                                    }
+                                } catch (e) { console.error('Error parsing collection for hiding', e) }
+                            }
+                        });
+
+
                         const flushBuffer = (keyPrefix: number) => {
                             if (currentBuffer.length === 0) return null;
                             const bufferCopy = [...currentBuffer];
@@ -408,17 +423,33 @@ export function PublicProfile({ username }: PublicProfileProps) {
                         };
 
                         links.forEach((link, index) => {
-                            // Check if this item acts as a full-width Section Breaker
-                            const isSectionBreaker = link.url.startsWith('header://') || link.url.startsWith('text://');
+                            // Check if this link is actually inside a collection, if so, SKIP IT from main list
+                            if (hiddenLinkIds.has(link.id)) return;
 
-                            if (isSectionBreaker) {
+                            // Check if this item acts as a full-width Section Breaker OR Collection
+                            const isSectionBreaker = link.url.startsWith('header://') || link.url.startsWith('text://');
+                            const isCollection = link.url.startsWith('#collection:');
+
+                            if (isSectionBreaker || isCollection) {
                                 // Flush any pending standard links first
                                 if (currentBuffer.length > 0) {
                                     renderedContent.push(flushBuffer(index));
                                 }
 
-                                // Render the Breaker Item (Full Width)
-                                if (link.url.startsWith('header://')) {
+                                if (isCollection) {
+                                    renderedContent.push(
+                                        <PublicCollectionItem
+                                            key={link.id}
+                                            link={link}
+                                            allLinks={links}
+                                            theme={theme}
+                                            themeConfig={currentThemeConfig}
+                                            linkStyle={link_style}
+                                            accentColor={accent_color}
+                                            openForm={openForm}
+                                        />
+                                    )
+                                } else if (link.url.startsWith('header://')) {
                                     const subtitle = link.url.replace('header://', '')
                                     renderedContent.push(
                                         <div key={link.id} className="text-center w-full pt-6 pb-8 break-inside-avoid">

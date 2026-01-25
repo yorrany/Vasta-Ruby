@@ -109,7 +109,28 @@ export function CollectionEditModal({ isOpen, onClose, collectionLink, onSuccess
         }
 
         if (currentLinkIds.length === 0) {
-            alert('Adicione pelo menos um link à coleção')
+            if (!confirm('Salvar esta coleção sem links irá excluí-la. Deseja continuar?')) {
+                return
+            }
+
+            setLoading(true)
+            try {
+                const { error } = await supabase
+                    .from('links')
+                    .delete()
+                    .eq('id', collectionLink.id)
+
+                if (error) throw error
+
+                window.dispatchEvent(new Event('vasta:link-update'))
+                onSuccess()
+                onClose()
+            } catch (error) {
+                console.error('Error deleting collection:', error)
+                alert('Erro ao excluir coleção')
+            } finally {
+                setLoading(false)
+            }
             return
         }
 
@@ -294,7 +315,7 @@ export function CollectionEditModal({ isOpen, onClose, collectionLink, onSuccess
                     </button>
                     <button
                         onClick={handleSave}
-                        disabled={loading || !title.trim() || currentLinkIds.length === 0}
+                        disabled={loading || !title.trim()}
                         className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white bg-vasta-primary hover:bg-vasta-primary-soft transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-vasta-primary/20"
                     >
                         {loading ? (
