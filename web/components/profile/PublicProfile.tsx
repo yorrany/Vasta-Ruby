@@ -7,6 +7,7 @@ import { PremiumLinkCard } from './PremiumLinkCard'
 import { VastaLogo } from '../VastaLogo'
 import { InstagramFeedSection } from './InstagramFeedSection'
 import { PublicProductModal } from "../products/PublicProductModal"
+import { PublicFormModal } from "../forms/PublicFormModal"
 import "../../app/globals.css" // Import global styles for Tailwind components
 
 type LinkStyle = 'glass' | 'solid' | 'outline'
@@ -45,6 +46,8 @@ export function PublicProfile({ username }: PublicProfileProps) {
     // Products State
     const [products, setProducts] = useState<any[]>([])
     const [selectedProduct, setSelectedProduct] = useState<any | null>(null)
+    const [forms, setForms] = useState<any[]>([])
+    const [selectedForm, setSelectedForm] = useState<any | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(false)
     const footerRef = useRef<HTMLDivElement>(null)
@@ -113,6 +116,14 @@ export function PublicProfile({ username }: PublicProfileProps) {
 
             if (productsData) setProducts(productsData)
 
+            // 4. Get Forms
+            const { data: formsData } = await supabase
+                .from('forms')
+                .select('*')
+                .eq('profile_id', profileData.id)
+
+            if (formsData) setForms(formsData)
+
             // 4. Increment View Count (Fire & Forget)
             // Ideally handled by backend function to avoid spam, but client-side is fine for MVP
             // supabase.rpc('increment_page_view', { page_id: ... })
@@ -153,6 +164,13 @@ export function PublicProfile({ username }: PublicProfileProps) {
 
     const openProductDetails = (product: any) => {
         setSelectedProduct(product)
+    }
+
+    const openForm = (linkId: number) => {
+        const form = forms.find(f => f.link_id === linkId)
+        if (form) {
+            setSelectedForm(form)
+        }
     }
 
 
@@ -344,12 +362,18 @@ export function PublicProfile({ username }: PublicProfileProps) {
                                         <div key={link.id} className="break-inside-avoid">
                                             {/* Standard Link Item Render */}
                                             {currentThemeConfig ? (
-                                                <PremiumLinkCard link={link} theme={theme as any} themeConfig={currentThemeConfig} />
+                                                <PremiumLinkCard
+                                                    link={link}
+                                                    theme={theme as any}
+                                                    themeConfig={currentThemeConfig}
+                                                    onClick={link.url.startsWith('#form:') ? (e) => { e.preventDefault(); openForm(link.id) } : undefined}
+                                                />
                                             ) : (
                                                 <a
                                                     href={link.url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
+                                                    onClick={link.url.startsWith('#form:') ? (e) => { e.preventDefault(); openForm(link.id) } : undefined}
                                                     className={`block w-full p-4 lg:p-5 group relative overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-xl border border-transparent`}
                                                     style={{
                                                         ...(link_style === 'solid' ? { backgroundColor: accent_color, color: '#fff' } : {}),
@@ -523,6 +547,14 @@ export function PublicProfile({ username }: PublicProfileProps) {
                     onClose={() => setSelectedProduct(null)}
                     product={selectedProduct}
                     onBuy={handleBuyProduct}
+                    accentColor={accent_color}
+                    isDark={isDark}
+                />
+
+                <PublicFormModal
+                    isOpen={!!selectedForm}
+                    onClose={() => setSelectedForm(null)}
+                    form={selectedForm}
                     accentColor={accent_color}
                     isDark={isDark}
                 />

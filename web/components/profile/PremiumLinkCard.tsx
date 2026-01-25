@@ -12,9 +12,10 @@ interface PremiumLinkCardProps {
     }
     theme: 'neo' | 'noir' | 'bento'
     themeConfig: { link: string;[key: string]: any }
+    onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void
 }
 
-export function PremiumLinkCard({ link, theme, themeConfig }: PremiumLinkCardProps) {
+export function PremiumLinkCard({ link, theme, themeConfig, onClick }: PremiumLinkCardProps) {
     const [ogImage, setOgImage] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
 
@@ -100,6 +101,7 @@ export function PremiumLinkCard({ link, theme, themeConfig }: PremiumLinkCardPro
             href={link.url}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={onClick}
             className={`group relative flex items-center w-full min-h-[5.5rem] lg:min-h-[6rem] overflow-hidden ${themeConfig.link}`}
         >
             {/* NOIR: Background Image Layer (Full Cover) */}
