@@ -106,7 +106,13 @@ export function GalleryView({ onSelectType, onUrlInput }: GalleryViewProps) {
                             ].map(app => (
                                 <button
                                     key={app.name}
-                                    onClick={() => onSelectType('link')} // Default to link form for these
+                                    onClick={() => {
+                                        // Map app names to integration types
+                                        if (app.name === 'Instagram') onSelectType('instagram')
+                                        else if (app.name === 'TikTok') onSelectType('tiktok')
+                                        else if (app.name === 'YouTube') onSelectType('youtube')
+                                        else onSelectType('link')
+                                    }}
                                     className="flex w-full items-center justify-between rounded-xl p-2 hover:bg-vasta-surface-soft transition-colors group"
                                 >
                                     <div className="flex items-center gap-3">

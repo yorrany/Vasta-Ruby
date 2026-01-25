@@ -1,9 +1,10 @@
-export type AddLinkView = 'gallery' | 'form'
+export type AddLinkView = 'gallery' | 'form' | 'product' | 'collection' | 'form-modal' | 'instagram' | 'tiktok' | 'youtube'
 
 export interface AddLinkState {
   view: AddLinkView
   url?: string
   title?: string
+  integrationType?: 'instagram' | 'tiktok' | 'youtube'
 }
 
 export function isValidUrl(text: string) {

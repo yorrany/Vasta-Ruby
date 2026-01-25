@@ -5,6 +5,10 @@ import { X } from "lucide-react"
 import { AddLinkState, AddLinkView } from "./types"
 import { GalleryView } from "./GalleryView"
 import { FormView } from "./FormView"
+import { ProductModal } from "../products/ProductModal"
+import { FormModal } from "../forms/FormModal"
+import { CollectionModal } from "../collections/CollectionModal"
+import { IntegrationView } from "../integrations/IntegrationView"
 
 interface AddLinkModalProps {
     isOpen: boolean
@@ -15,6 +19,7 @@ interface AddLinkModalProps {
 
 export function AddLinkModal({ isOpen, onClose, onSuccess, initialState }: AddLinkModalProps) {
     const [state, setState] = useState<AddLinkState>({ view: 'gallery' })
+    const [productModalOpen, setProductModalOpen] = useState(false)
 
     // Sync with props when they change (e.g. paste triggered while modal closed, or just opening)
     useEffect(() => {
@@ -29,11 +34,30 @@ export function AddLinkModal({ isOpen, onClose, onSuccess, initialState }: AddLi
     }, [isOpen, initialState])
 
     const handleSelectType = (type: string) => {
-        if (type === 'link') {
-            setState({ view: 'form' })
-        } else {
-            // Placeholder for other types
-            alert("Not implemented yet: " + type)
+        switch (type) {
+            case 'link':
+                setState({ view: 'form' })
+                break
+            case 'product':
+                setProductModalOpen(true)
+                break
+            case 'collection':
+                setState({ view: 'collection' })
+                break
+            case 'form':
+                setState({ view: 'form-modal' })
+                break
+            case 'instagram':
+                setState({ view: 'instagram', integrationType: 'instagram' })
+                break
+            case 'tiktok':
+                setState({ view: 'tiktok', integrationType: 'tiktok' })
+                break
+            case 'youtube':
+                setState({ view: 'youtube', integrationType: 'youtube' })
+                break
+            default:
+                alert("Tipo não implementado: " + type)
         }
     }
 
@@ -41,7 +65,33 @@ export function AddLinkModal({ isOpen, onClose, onSuccess, initialState }: AddLi
         setState({ view: 'form', url })
     }
 
+    const handleBack = () => {
+        setState({ view: 'gallery' })
+    }
+
+    const handleSuccess = () => {
+        onSuccess()
+        onClose()
+        setState({ view: 'gallery' })
+    }
+
     if (!isOpen) return null
+
+    // Product modal is separate because it has its own overlay
+    if (productModalOpen) {
+        return (
+            <>
+                <ProductModal
+                    isOpen={productModalOpen}
+                    onClose={() => {
+                        setProductModalOpen(false)
+                        onClose()
+                    }}
+                    onSuccess={handleSuccess}
+                />
+            </>
+        )
+    }
 
     return (
         <div
@@ -60,7 +110,7 @@ export function AddLinkModal({ isOpen, onClose, onSuccess, initialState }: AddLi
                     <X size={24} />
                 </button>
 
-                {/* Header Title dynamic based on view? No, static "Add" is fine like screenshot, or hidden in FormView */}
+                {/* Header Title dynamic based on view */}
                 {state.view === 'gallery' && (
                     <h2 className="text-xl font-bold text-vasta-text mb-4">Adicionar</h2>
                 )}
@@ -71,17 +121,34 @@ export function AddLinkModal({ isOpen, onClose, onSuccess, initialState }: AddLi
                             onSelectType={handleSelectType}
                             onUrlInput={handleUrlInput}
                         />
-                    ) : (
+                    ) : state.view === 'form' ? (
                         <FormView
                             initialUrl={state.url}
                             initialTitle={state.title}
-                            onBack={() => setState({ view: 'gallery' })}
-                            onSuccess={() => {
-                                onSuccess()
-                                onClose()
-                            }}
+                            onBack={handleBack}
+                            onSuccess={handleSuccess}
                         />
-                    )}
+                    ) : state.view === 'form-modal' ? (
+                        <FormModal
+                            isOpen={true}
+                            onSuccess={handleSuccess}
+                            onBack={handleBack}
+                            embedded={true}
+                        />
+                    ) : state.view === 'collection' ? (
+                        <CollectionModal
+                            isOpen={true}
+                            onSuccess={handleSuccess}
+                            onBack={handleBack}
+                            embedded={true}
+                        />
+                    ) : state.view === 'instagram' || state.view === 'tiktok' || state.view === 'youtube' ? (
+                        <IntegrationView
+                            type={state.integrationType || 'instagram'}
+                            onBack={handleBack}
+                            onSuccess={handleSuccess}
+                        />
+                    ) : null}
                 </div>
             </div>
         </div>
