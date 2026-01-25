@@ -21,7 +21,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline';",
               "img-src 'self' blob: data: https:;",
               "font-src 'self' data:;",
-              "connect-src 'self' https://challenges.cloudflare.com;",
+              "connect-src 'self' https://challenges.cloudflare.com https://fwonowsvrbrgeaahoekk.supabase.co wss://fwonowsvrbrgeaahoekk.supabase.co;",
               "frame-src https://challenges.cloudflare.com;"
             ].join(' ').replace(/\s{2,}/g, ' ').trim()
           }
