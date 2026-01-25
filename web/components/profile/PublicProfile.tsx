@@ -148,19 +148,19 @@ export function PublicProfile({ username }: PublicProfileProps) {
     // Theme Logic
     const themeConfig = {
         neo: {
-            sidebar: 'bg-white lg:border-r-4 lg:border-black',
+            sidebar: 'bg-white border-b-4 border-black',
             card: 'bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none',
             avatar: 'rounded-none border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]',
             link: 'bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all rounded-none text-black font-bold',
         },
         noir: {
-            sidebar: 'bg-black lg:border-r lg:border-white/10',
+            sidebar: 'bg-black border-b border-white/10',
             card: 'bg-zinc-900 border border-white/10 shadow-2xl rounded-none',
             avatar: 'rounded-none border border-white/20 grayscale hover:grayscale-0 transition-all duration-500',
             link: 'bg-white/5 border border-white/5 hover:bg-white/10 transition-all rounded-sm text-stone-200 uppercase tracking-widest text-sm backdrop-blur-md',
         },
         bento: {
-            sidebar: 'bg-white/80 backdrop-blur-xl lg:border-r lg:border-gray-200',
+            sidebar: 'bg-white/80 backdrop-blur-xl border-b border-gray-200',
             card: 'bg-white shadow-[0_20px_40px_rgb(0,0,0,0.08)] rounded-[2.5rem]',
             avatar: 'rounded-[2rem] border-4 border-white shadow-xl',
             link: 'bg-white shadow-sm border border-gray-100 hover:shadow-md hover:scale-[1.01] transition-all rounded-2xl text-gray-700 font-medium',
@@ -182,10 +182,10 @@ export function PublicProfile({ username }: PublicProfileProps) {
     }
 
     return (
-        <div style={pageStyle} className="min-h-screen w-full transition-colors duration-500 overflow-x-hidden flex flex-col lg:flex-row">
+        <div style={pageStyle} className="min-h-screen w-full transition-colors duration-500 overflow-x-hidden flex flex-col items-center">
 
-            {/* Left Column: Profile Identity - Sticky on Desktop */}
-            <aside className={`w-full lg:w-[480px] lg:h-screen lg:sticky lg:top-0 shrink-0 flex flex-col relative z-10 ${currentThemeConfig?.sidebar || 'lg:border-r lg:border-white/5 lg:bg-black/5 lg:backdrop-blur-sm'}`}>
+            {/* Profile Identity - Centered Column */}
+            <aside className={`w-full lg:w-1/2 shrink-0 flex flex-col relative z-10 ${currentThemeConfig?.sidebar || 'bg-black/5 backdrop-blur-sm'}`}>
                 <div className="flex-1 flex flex-col lg:justify-center p-4 lg:p-8 w-full max-w-lg mx-auto lg:max-w-none h-full">
 
                     {/* Profile Card */}
@@ -273,8 +273,8 @@ export function PublicProfile({ username }: PublicProfileProps) {
                 </div>
             </aside>
 
-            {/* Right Column: Content Scroll */}
-            <main className="flex-1 w-full lg:h-screen lg:overflow-y-auto px-6 py-8 lg:p-16 lg:py-24 space-y-12 pb-32">
+            {/* Content Scroll - Centered Column */}
+            <main className="flex-1 w-full lg:w-1/2 px-6 py-8 lg:p-12 space-y-12 pb-32">
 
                 {/* Links Section */}
                 <div className={`mx-auto ${currentThemeConfig ? 'w-full max-w-5xl' : 'max-w-2xl lg:max-w-4xl'}`}>
@@ -419,8 +419,8 @@ export function PublicProfile({ username }: PublicProfileProps) {
                     </div>
                 )}
 
-                {/* Mobile Footer */}
-                <footer className="mt-16 text-center lg:hidden">
+                {/* Footer */}
+                <footer className="mt-16 text-center">
                     <a href="https://vasta.pro" target="_blank" rel="noopener noreferrer" className="inline-flex items-center opacity-40 hover:opacity-100 transition-opacity hover:scale-105">
                         <VastaLogo className="h-4 w-auto fill-current" />
                     </a>
