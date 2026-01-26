@@ -90,24 +90,34 @@ export function ComparisonCalculator() {
 
                     {/* INPUTS */}
                     <div className="space-y-8">
+                        {/* Faturamento Mensal Slider */}
                         <div className="bg-vasta-bg p-6 rounded-3xl border border-vasta-border shadow-inner">
-                            <label className="block text-sm font-bold text-vasta-muted mb-2 uppercase tracking-wider">
+                            <label className="block text-sm font-bold text-vasta-muted mb-4 uppercase tracking-wider">
                                 Faturamento Mensal
                             </label>
-                            <div className="relative group">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-vasta-muted font-bold text-lg">R$</span>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    value={revenue}
-                                    onChange={(e) => setRevenue(Number(e.target.value))}
-                                    className="w-full bg-vasta-surface pl-12 pr-4 py-4 rounded-xl border border-vasta-border text-2xl font-black text-vasta-text focus:outline-none focus:ring-2 focus:ring-vasta-primary focus:border-transparent transition-all"
-                                />
+                            <div className="mb-6">
+                                <span className="block text-3xl font-black text-vasta-text">
+                                    {formatCurrency(revenue)}
+                                </span>
+                            </div>
+                            <input
+                                type="range"
+                                min="1000"
+                                max="500000"
+                                step="1000"
+                                value={revenue}
+                                onChange={(e) => setRevenue(Number(e.target.value))}
+                                className="w-full h-2 bg-vasta-surface-soft rounded-lg appearance-none cursor-pointer accent-vasta-primary hover:accent-vasta-primary/80 transition-all"
+                            />
+                            <div className="flex justify-between text-[10px] text-vasta-muted font-medium mt-2">
+                                <span>R$ 1k</span>
+                                <span>R$ 500k+</span>
                             </div>
                         </div>
 
+                        {/* Ticket Médio Slider */}
                         <div className="bg-vasta-bg p-6 rounded-3xl border border-vasta-border shadow-inner">
-                            <div className="flex justify-between items-center mb-2">
+                            <div className="flex justify-between items-center mb-4">
                                 <label className="block text-sm font-bold text-vasta-muted uppercase tracking-wider">
                                     Ticket Médio (Valor do Produto)
                                 </label>
@@ -119,19 +129,28 @@ export function ComparisonCalculator() {
                                 </div>
                             </div>
 
-                            <div className="relative group">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-vasta-muted font-bold text-lg">R$</span>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    value={ticket}
-                                    onChange={(e) => setTicket(Number(e.target.value))}
-                                    className="w-full bg-vasta-surface pl-12 pr-4 py-4 rounded-xl border border-vasta-border text-2xl font-black text-vasta-text focus:outline-none focus:ring-2 focus:ring-vasta-primary focus:border-transparent transition-all"
-                                />
+                            <div className="mb-6 flex items-baseline gap-2">
+                                <span className="block text-3xl font-black text-vasta-text">
+                                    {formatCurrency(ticket)}
+                                </span>
+                                <span className="text-xs text-vasta-muted font-bold">
+                                    (~ {results.transactions} vendas/mês)
+                                </span>
                             </div>
-                            <p className="mt-2 text-xs text-vasta-muted font-medium text-right">
-                                ~ {results.transactions} vendas/mês
-                            </p>
+
+                            <input
+                                type="range"
+                                min="10"
+                                max="5000"
+                                step="10"
+                                value={ticket}
+                                onChange={(e) => setTicket(Number(e.target.value))}
+                                className="w-full h-2 bg-vasta-surface-soft rounded-lg appearance-none cursor-pointer accent-vasta-primary hover:accent-vasta-primary/80 transition-all"
+                            />
+                            <div className="flex justify-between text-[10px] text-vasta-muted font-medium mt-2">
+                                <span>R$ 10</span>
+                                <span>R$ 5k</span>
+                            </div>
                         </div>
 
                         {/* Disclaimer */}
@@ -218,6 +237,21 @@ export function ComparisonCalculator() {
 
                     </div>
                 </div>
+            </div>
+
+            {/* Footer CTA */}
+            <div className="mt-12 pt-8 border-t border-vasta-border/50 text-center">
+                <p className="text-vasta-muted mb-6 text-sm font-medium">
+                    Não deixe seu dinheiro na mesa. Mude para a Vasta hoje mesmo.
+                </p>
+                <button
+                    onClick={() => document.getElementById('signup-trigger')?.click() || window.dispatchEvent(new CustomEvent('vasta:auth-open', { detail: 'signup' }))}
+                    className="inline-flex items-center gap-3 bg-vasta-primary text-vasta-bg px-8 py-4 rounded-2xl font-black text-lg shadow-xl shadow-vasta-primary/20 hover:scale-105 hover:shadow-2xl hover:shadow-vasta-primary/30 transition-all duration-300 group"
+                >
+                    Começar a economizar agora
+                    <TrendingUp className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+                {/* Hidden trigger fallback if needed, or rely on custom event */}
             </div>
         </div>
     )
