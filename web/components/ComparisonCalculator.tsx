@@ -70,8 +70,15 @@ export function ComparisonCalculator() {
         }
     }, [revenue, ticket])
 
+    const scrollToPlans = () => {
+        const plansSection = document.getElementById('precos')
+        if (plansSection) {
+            plansSection.scrollIntoView({ behavior: 'smooth' })
+        }
+    }
+
     return (
-        <div className="w-full max-w-7xl mx-auto p-6 md:p-8 rounded-[2.5rem] bg-vasta-surface border border-vasta-border shadow-2xl relative overflow-hidden">
+        <div className="w-full max-w-7xl mx-auto p-6 md:p-10 rounded-[2.5rem] bg-vasta-surface border border-vasta-border shadow-2xl relative overflow-hidden flex flex-col gap-10">
             {/* Decorative Elements */}
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-vasta-primary/5 rounded-full blur-3xl" />
             <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl" />
@@ -86,17 +93,18 @@ export function ComparisonCalculator() {
                     </p>
                 </div>
 
-                <div className="grid lg:grid-cols-2 gap-12">
+                {/* Main Content Grid */}
+                <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
 
                     {/* INPUTS */}
-                    <div className="space-y-8">
+                    <div className="space-y-6 h-full flex flex-col justify-center">
                         {/* Faturamento Mensal Slider */}
-                        <div className="bg-vasta-bg p-6 rounded-3xl border border-vasta-border shadow-inner">
+                        <div className="bg-vasta-bg p-6 md:p-8 rounded-3xl border border-vasta-border shadow-inner">
                             <label className="block text-sm font-bold text-vasta-muted mb-4 uppercase tracking-wider">
                                 Faturamento Mensal
                             </label>
                             <div className="mb-6">
-                                <span className="block text-3xl font-black text-vasta-text">
+                                <span className="block text-4xl font-black text-vasta-text">
                                     {formatCurrency(revenue)}
                                 </span>
                             </div>
@@ -108,30 +116,30 @@ export function ComparisonCalculator() {
                                 value={revenue}
                                 onChange={(e) => setRevenue(Number(e.target.value))}
                                 aria-label="Faturamento Mensal"
-                                className="w-full h-2 bg-vasta-surface-soft rounded-lg appearance-none cursor-pointer accent-vasta-primary hover:accent-vasta-primary/80 transition-all"
+                                className="w-full h-3 bg-vasta-surface-soft rounded-lg appearance-none cursor-pointer accent-vasta-primary hover:accent-vasta-primary/80 transition-all"
                             />
-                            <div className="flex justify-between text-[10px] text-vasta-muted font-medium mt-2">
+                            <div className="flex justify-between text-[10px] text-vasta-muted font-medium mt-3">
                                 <span>R$ 1k</span>
                                 <span>R$ 500k+</span>
                             </div>
                         </div>
 
                         {/* Ticket Médio Slider */}
-                        <div className="bg-vasta-bg p-6 rounded-3xl border border-vasta-border shadow-inner">
+                        <div className="bg-vasta-bg p-6 md:p-8 rounded-3xl border border-vasta-border shadow-inner">
                             <div className="flex justify-between items-center mb-4">
                                 <label className="block text-sm font-bold text-vasta-muted uppercase tracking-wider">
                                     Ticket Médio (Valor do Produto)
                                 </label>
                                 <div className="group relative">
                                     <AlertCircle className="w-4 h-4 text-vasta-muted cursor-help" />
-                                    <div className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-black text-white text-xs rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                                    <div className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-black text-white text-xs rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 shadow-xl">
                                         Usamos o ticket médio para calcular as taxas fixas por transação cobradas pelos concorrentes (ex: R$ 2,49).
                                     </div>
                                 </div>
                             </div>
 
                             <div className="mb-6 flex items-baseline gap-2">
-                                <span className="block text-3xl font-black text-vasta-text">
+                                <span className="block text-4xl font-black text-vasta-text">
                                     {formatCurrency(ticket)}
                                 </span>
                                 <span className="text-xs text-vasta-muted font-bold">
@@ -147,39 +155,29 @@ export function ComparisonCalculator() {
                                 value={ticket}
                                 onChange={(e) => setTicket(Number(e.target.value))}
                                 aria-label="Ticket Médio"
-                                className="w-full h-2 bg-vasta-surface-soft rounded-lg appearance-none cursor-pointer accent-vasta-primary hover:accent-vasta-primary/80 transition-all"
+                                className="w-full h-3 bg-vasta-surface-soft rounded-lg appearance-none cursor-pointer accent-vasta-primary hover:accent-vasta-primary/80 transition-all"
                             />
-                            <div className="flex justify-between text-[10px] text-vasta-muted font-medium mt-2">
+                            <div className="flex justify-between text-[10px] text-vasta-muted font-medium mt-3">
                                 <span>R$ 10</span>
                                 <span>R$ 5k</span>
                             </div>
                         </div>
-
-                        {/* Disclaimer */}
-                        <div className="p-4 rounded-xl bg-vasta-surface-soft border border-vasta-border/50 text-[10px] text-vasta-muted/80 leading-relaxed">
-                            <p>
-                                <strong>* Bases de comparação (Jan/2025):</strong><br />
-                                Hotmart: 9.90% + R$ 1,00 por transação.<br />
-                                Kiwify: 8.99% + R$ 2,49 por transação.<br />
-                                Vasta: Planos Start (8%), Pro (4% + mensalidade) ou Business (1% + mensalidade). O cálculo seleciona automaticamente o melhor plano para seu volume.
-                            </p>
-                        </div>
                     </div>
 
                     {/* RESULTS */}
-                    <div className="space-y-4">
+                    <div className="h-full flex flex-col justify-between gap-6">
                         {/* Vasta Card (Highlighted) */}
-                        <div className="relative group overflow-hidden p-6 rounded-[2rem] bg-gradient-to-br from-emerald-500/10 to-vasta-primary/5 border border-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all duration-300 transform hover:-translate-y-1">
+                        <div className="relative group overflow-hidden p-8 rounded-[2rem] bg-gradient-to-br from-emerald-500/10 to-vasta-primary/5 border border-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all duration-300 transform hover:-translate-y-1">
                             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                            <div className="relative z-10 flex justify-between items-center mb-4">
-                                <div className="flex items-center gap-2">
-                                    <div className="p-2 rounded-lg bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
-                                        <DollarSign size={20} className="stroke-[3px]" />
+                            <div className="relative z-10 flex justify-between items-center mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2.5 rounded-xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
+                                        <DollarSign size={24} className="stroke-[3px]" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-black text-vasta-text">Na Vasta</h3>
-                                        <div className="text-xs font-bold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full w-fit">
+                                        <h3 className="text-xl font-black text-vasta-text">Na Vasta</h3>
+                                        <div className="text-xs font-bold text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-full w-fit mt-1">
                                             Melhor Opção: Plano {results.vasta.planName}
                                         </div>
                                     </div>
@@ -187,24 +185,23 @@ export function ComparisonCalculator() {
                             </div>
 
                             <div className="relative z-10">
-                                <p className="text-sm font-bold text-vasta-text/60 mb-1">Você recebe líquido:</p>
-                                <p className="text-4xl md:text-5xl font-black text-emerald-600 tracking-tighter">
+                                <p className="text-sm font-bold text-vasta-text/60 mb-2">Você recebe líquido:</p>
+                                <p className="text-5xl lg:text-6xl font-black text-emerald-600 tracking-tighter">
                                     {formatCurrency(results.vasta.net)}
                                 </p>
-                                <p className="mt-2 text-xs font-bold text-vasta-muted">
+                                <p className="mt-4 text-xs font-bold text-vasta-muted border-t border-emerald-500/10 pt-3">
                                     Taxas totais: {formatCurrency(results.vasta.feeTotal)} ({results.vasta.feeString})
                                 </p>
                             </div>
                         </div>
 
-                        {/* Vertical Divider Logic for Comparison */}
-                        <div className="relative pl-4 space-y-4 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[2px] before:bg-gradient-to-b before:from-transparent before:via-vasta-border before:to-transparent">
-
+                        {/* Competitors */}
+                        <div className="grid gap-3">
                             {/* Kiwify */}
-                            <div className="p-5 rounded-3xl bg-vasta-surface border border-vasta-border opacity-80 hover:opacity-100 transition-opacity">
-                                <div className="flex justify-between items-end">
+                            <div className="p-5 rounded-3xl bg-vasta-bg border border-vasta-border opacity-90 hover:opacity-100 transition-opacity hover:border-vasta-border/80">
+                                <div className="flex justify-between items-center">
                                     <div>
-                                        <h4 className="font-bold text-vasta-text mb-1">Na Kiwify</h4>
+                                        <h4 className="font-bold text-vasta-text text-sm mb-1">Na Kiwify</h4>
                                         <p className="text-2xl font-bold text-vasta-muted tracking-tight">
                                             {formatCurrency(results.kiwify.net)}
                                         </p>
@@ -219,10 +216,10 @@ export function ComparisonCalculator() {
                             </div>
 
                             {/* Hotmart */}
-                            <div className="p-5 rounded-3xl bg-vasta-surface border border-vasta-border opacity-80 hover:opacity-100 transition-opacity">
-                                <div className="flex justify-between items-end">
+                            <div className="p-5 rounded-3xl bg-vasta-bg border border-vasta-border opacity-90 hover:opacity-100 transition-opacity hover:border-vasta-border/80">
+                                <div className="flex justify-between items-center">
                                     <div>
-                                        <h4 className="font-bold text-vasta-text mb-1">Na Hotmart</h4>
+                                        <h4 className="font-bold text-vasta-text text-sm mb-1">Na Hotmart</h4>
                                         <p className="text-2xl font-bold text-vasta-muted tracking-tight">
                                             {formatCurrency(results.hotmart.net)}
                                         </p>
@@ -236,24 +233,29 @@ export function ComparisonCalculator() {
                                 </div>
                             </div>
                         </div>
-
                     </div>
+                </div>
+
+                {/* Disclaimer (Full Width) */}
+                <div className="mt-8 p-5 rounded-2xl bg-vasta-bg/50 border border-vasta-border/50 text-[10px] text-vasta-muted/80 leading-relaxed text-center max-w-4xl mx-auto">
+                    <p>
+                        <strong>* Bases de comparação (Jan/2025):</strong> Hotmart: 9.90% + R$ 1,00 por transação. | Kiwify: 8.99% + R$ 2,49 por transação. | Vasta: Planos Start (8%), Pro (4% + mensalidade) ou Business (1% + mensalidade). O cálculo seleciona automaticamente o melhor plano para seu volume.
+                    </p>
                 </div>
             </div>
 
             {/* Footer CTA */}
-            <div className="mt-12 pt-8 border-t border-vasta-border/50 text-center">
+            <div className="pt-2 border-t border-vasta-border/50 text-center">
                 <p className="text-vasta-muted mb-6 text-sm font-medium">
                     Não deixe seu dinheiro na mesa. Mude para a Vasta hoje mesmo.
                 </p>
                 <button
-                    onClick={() => document.getElementById('signup-trigger')?.click() || window.dispatchEvent(new CustomEvent('vasta:auth-open', { detail: 'signup' }))}
-                    className="inline-flex items-center gap-3 bg-vasta-primary text-vasta-bg px-8 py-4 rounded-2xl font-black text-lg shadow-xl shadow-vasta-primary/20 hover:scale-105 hover:shadow-2xl hover:shadow-vasta-primary/30 transition-all duration-300 group"
+                    onClick={scrollToPlans}
+                    className="inline-flex items-center gap-3 bg-vasta-primary text-vasta-bg px-10 py-5 rounded-2xl font-black text-lg shadow-xl shadow-vasta-primary/20 hover:scale-105 hover:shadow-2xl hover:shadow-vasta-primary/30 transition-all duration-300 group"
                 >
                     Começar a economizar agora
                     <TrendingUp className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
-                {/* Hidden trigger fallback if needed, or rely on custom event */}
             </div>
         </div>
     )
