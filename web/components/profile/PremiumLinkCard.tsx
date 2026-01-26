@@ -33,6 +33,17 @@ export function PremiumLinkCard({ link, theme, themeConfig, onClick, isPreview =
             return
         }
 
+        // Skip metadata fetch for internal links, headers, text, or non-http URLs
+        if (
+            link.url.startsWith('#') ||
+            link.url.startsWith('header://') ||
+            link.url.startsWith('text://') ||
+            !link.url.startsWith('http')
+        ) {
+            setLoading(false)
+            return
+        }
+
         // Aguarda um pouco para não sobrecarregar em renderização inicial em massa, 
         // mas aqui vamos direto pois a API é edge.
         fetch(`/api/metadata?url=${encodeURIComponent(link.url)}`)

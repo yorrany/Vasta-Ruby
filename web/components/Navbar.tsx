@@ -52,7 +52,7 @@ export function Navbar() {
   const navLinks = [
     { name: "Funcionalidades", href: "#features" },
     { name: "Preços", href: "#precos" },
-    { name: "Blog", href: "/blog" },
+    { name: "Simule seus Ganhos", href: "#calculadora", highlight: true },
   ]
 
   const openAuth = (mode: 'login' | 'signup') => {
@@ -87,8 +87,11 @@ export function Navbar() {
             <Link
               key={link.name}
               href={link.href}
-              onClick={(e) => handleScroll(e, link.href)}
-              className="transition-colors hover:text-vasta-text"
+              onClick={(e: React.MouseEvent<HTMLAnchorElement>) => handleScroll(e, link.href)}
+              className={`transition-colors hover:text-vasta-text ${link.highlight
+                ? 'text-vasta-primary font-bold bg-vasta-primary/10 px-4 py-2 rounded-full hover:bg-vasta-primary/20'
+                : ''
+                }`}
             >
               {link.name}
             </Link>
@@ -105,6 +108,7 @@ export function Navbar() {
                 <div className="relative">
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    aria-label="Menu do usuário"
                     className="flex items-center gap-2 rounded-full border border-vasta-border bg-vasta-surface p-1.5 transition-colors hover:border-vasta-border-dark"
                   >
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-vasta-primary/20 text-vasta-primary">
@@ -168,6 +172,7 @@ export function Navbar() {
           <button
             className="flex rounded-lg p-2 text-vasta-muted hover:bg-vasta-surface-soft hover:text-vasta-text md:hidden"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Abrir menu"
           >
             {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
@@ -182,11 +187,12 @@ export function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   handleScroll(e, link.href);
                   setIsMobileMenuOpen(false);
                 }}
-                className="text-lg font-semibold text-vasta-text-soft"
+                className={`text-lg font-semibold ${link.highlight ? 'text-vasta-primary' : 'text-vasta-text-soft'
+                  }`}
               >
                 {link.name}
               </Link>
