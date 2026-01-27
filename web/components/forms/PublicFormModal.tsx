@@ -36,6 +36,7 @@ export function PublicFormModal({ isOpen, onClose, form, accentColor = "#000", i
     const [formData, setFormData] = useState<Record<string, string>>({})
     const [captchaToken, setCaptchaToken] = useState<string | null>(null)
     const [turnstileError, setTurnstileError] = useState(false)
+    const [submitError, setSubmitError] = useState<string | null>(null)
 
     // Normalize fields to ensure unique IDs
     const normalizedForm = useMemo(() => {
@@ -54,9 +55,10 @@ export function PublicFormModal({ isOpen, onClose, form, accentColor = "#000", i
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        setSubmitError(null)
 
         if (!captchaToken) {
-            alert('Por favor, complete a verificação de segurança.')
+            setSubmitError('Por favor, aguarde a verificação de segurança.')
             return
         }
 
@@ -85,12 +87,13 @@ export function PublicFormModal({ isOpen, onClose, form, accentColor = "#000", i
             setTimeout(() => {
                 setSuccess(false)
                 setFormData({})
+                setSubmitError(null)
                 onClose()
             }, 3000)
 
         } catch (error: any) {
             console.error('Error submitting form:', error)
-            alert(error.message || 'Erro ao enviar formulário. Tente novamente.')
+            setSubmitError(error.message || 'Erro ao enviar formulário. Tente novamente.')
         } finally {
             setLoading(false)
         }
@@ -239,20 +242,26 @@ export function PublicFormModal({ isOpen, onClose, form, accentColor = "#000", i
                                 }}
                                 options={{
                                     theme: isDark ? 'dark' : 'light',
-                                    size: 'flexible'
+                                    size: 'flexible',
                                 }}
                             />
                             {turnstileError && (
-                                <p className="text-red-500 text-xs text-center">
-                                    Erro na verificação de segurança.
+                                <p className="text-red-500 text-xs text-center animate-pulse">
+                                    Erro na verificação de segurança. Recarregue a página.
                                 </p>
                             )}
                             {!captchaToken && !turnstileError && (
-                                <p className={`text-xs text-center ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                                <p className={`text-xs text-center animate-pulse ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
                                     Verificando segurança...
                                 </p>
                             )}
                         </div>
+
+                        {submitError && (
+                            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-xs text-center">
+                                {submitError}
+                            </div>
+                        )}
 
                         <button
                             onClick={handleSubmit}
