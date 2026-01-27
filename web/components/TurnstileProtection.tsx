@@ -24,11 +24,12 @@ export function TurnstileProtection() {
     }
 
     const windowAny = window as any
+    const siteKey = isLocalhost ? TURNSTILE_TEST_KEY : TURNSTILE_PROD_KEY
 
     const renderTurnstile = () => {
       if (windowAny.turnstile && containerRef.current) {
         windowAny.turnstile.render(containerRef.current, {
-          sitekey: TURNSTILE_PROD_KEY,
+          sitekey: siteKey,
           size: 'invisible',
           callback: (token: string) => {
             console.log("Turnstile protection active")
@@ -46,11 +47,6 @@ export function TurnstileProtection() {
       windowAny.onloadTurnstileCallback = renderTurnstile
     }
   }, [isLocalhost])
-
-  // Don't render anything on localhost
-  if (isLocalhost) {
-    return null
-  }
 
   return (
     <>
