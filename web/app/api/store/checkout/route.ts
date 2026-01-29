@@ -5,7 +5,7 @@ import { getPlanByCode, type PlanCode } from '@/lib/plans'
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-01-27.acacia',
+  apiVersion: '2025-12-15.clover',
   typescript: true,
 })
 
@@ -17,9 +17,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
+    // 1. Fetch Product Details
     const supabase = await createClient()
 
-    // 1. Fetch Product Details
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database initialization failed' }, { status: 500 })
+    }
+
     const { data: product, error: productError } = await supabase
       .from('products')
       .select('*')

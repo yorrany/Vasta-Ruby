@@ -8,7 +8,7 @@ function getStripe() {
         throw new Error('STRIPE_SECRET_KEY is not set')
     }
     return new Stripe(process.env.STRIPE_SECRET_KEY, {
-        apiVersion: '2025-01-27.acacia'
+        apiVersion: '2025-12-15.clover'
     })
 }
 
@@ -18,6 +18,11 @@ export async function POST(request: NextRequest) {
 
         // 1. Auth check
         const supabase = await createClient()
+        
+        if (!supabase) {
+            return NextResponse.json({ error: 'Database unavailable' }, { status: 500 })
+        }
+
         const { data: { user }, error: authError } = await supabase.auth.getUser()
 
         if (authError || !user) {
@@ -59,7 +64,7 @@ export async function POST(request: NextRequest) {
         }
 
         const stripe = getStripe()
-        const subscription = await stripe.subscriptions.retrieve(profile.stripe_subscription_id)
+        const subscription = await stripe.subscriptions.retrieve(profile.stripe_subscription_id) as any
 
         // Verify ownership just in case
         // (The profile check above effectively does this, but good to be safe if we had customer_id stored)

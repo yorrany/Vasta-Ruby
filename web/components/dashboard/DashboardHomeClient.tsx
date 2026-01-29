@@ -11,7 +11,8 @@ import {
    CreditCard,
    Copy,
    AlertCircle,
-   Instagram
+   Instagram,
+   MousePointerClick
 } from "lucide-react"
 
 interface DashboardHomeClientProps {

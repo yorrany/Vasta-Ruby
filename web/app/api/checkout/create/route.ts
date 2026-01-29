@@ -34,6 +34,14 @@ export async function POST(request: NextRequest) {
 
     // Verificar autenticação
     const supabase = await createClient()
+    
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Supabase client could not be initialized' },
+        { status: 500 }
+      )
+    }
+
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {

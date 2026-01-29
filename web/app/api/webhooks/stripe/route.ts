@@ -47,6 +47,14 @@ export async function POST(request: NextRequest) {
 
   // Get Supabase client
   const supabase = await createClient()
+  
+  if (!supabase) {
+    console.error('Supabase client initialization failed in webhook')
+    return NextResponse.json(
+      { error: 'Database connection failed' },
+      { status: 500 }
+    )
+  }
 
   try {
     switch (event.type) {

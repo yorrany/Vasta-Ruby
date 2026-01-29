@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'edge' // Usar Edge Runtime para performance se possível, ou nodejs se precisar de libs mais pesadas. Regex funciona no edge.
+export const runtime = 'nodejs' // Usar Node.js para compatibilidade total e evitar warnings de Edge.
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)

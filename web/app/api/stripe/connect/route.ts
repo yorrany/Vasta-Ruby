@@ -4,13 +4,18 @@ import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-01-27.acacia',
+  apiVersion: '2025-12-15.clover',
   typescript: true,
 })
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
+    
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
+    }
+
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
