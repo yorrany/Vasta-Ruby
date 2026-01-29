@@ -96,7 +96,7 @@ export default function FormulariosPage() {
       const formIds = [...new Set((submissionsData || []).map((s: any) => s.form_id))]
       const { data: formsData, error: formsError } = await supabase
         .from('forms')
-        .select('id, title')
+        .select('id, title, fields')
         .in('id', formIds)
 
       if (formsError) throw formsError
@@ -416,14 +416,36 @@ export default function FormulariosPage() {
               </div>
 
               <div className="space-y-2">
-                {Object.entries(submission.data).map(([key, value]) => (
-                  <div key={key} className="p-3 rounded-lg bg-vasta-surface border border-vasta-border/50">
-                    <div className="text-xs font-bold text-vasta-muted uppercase mb-1">{key}</div>
-                    <div className="text-sm text-vasta-text">
-                      {typeof value === 'string' ? value : JSON.stringify(value)}
+                {Object.entries(submission.data).map(([key, value]) => {
+                  // Find the label for this field
+                  const formFields = (submission.form as any)?.fields || []
+                  let label = key
+
+                  // 1. Try exact ID match
+                  const field = formFields.find((f: any) => f.id === key)
+                  if (field) {
+                    label = field.label
+                  } else {
+                    // 2. Try to parse "field-{formId}-{index}" pattern or "FIELD-{formId}-{index}"
+                    // This handles auto-generated IDs if the saved ID wasn't used or normalized
+                    const match = key.match(/field-\d+-(\d+)/i)
+                    if (match && match[1]) {
+                      const index = parseInt(match[1], 10)
+                      if (formFields[index]) {
+                        label = formFields[index].label
+                      }
+                    }
+                  }
+
+                  return (
+                    <div key={key} className="p-3 rounded-lg bg-vasta-surface border border-vasta-border/50">
+                      <div className="text-xs font-bold text-vasta-muted uppercase mb-1">{label}</div>
+                      <div className="text-sm text-vasta-text">
+                        {typeof value === 'string' ? value : JSON.stringify(value)}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           ))}
