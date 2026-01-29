@@ -32,6 +32,21 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "vasta.pro",
+          },
+        ],
+        destination: "https://www.vasta.pro/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
