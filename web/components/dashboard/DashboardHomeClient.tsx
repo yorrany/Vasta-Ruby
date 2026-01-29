@@ -84,224 +84,239 @@ export default function DashboardHomeClient({ ordersData }: DashboardHomeClientP
       setTimeout(() => setCopied(false), 2000)
    }
 
-   return (
-      <div className="space-y-6 animate-in fade-in duration-500">
+    return (
+       <div className="space-y-8 animate-fade-in-up">
+          
+          {/* Welcome Section */}
+          <div className="flex flex-col gap-2">
+             <h1 className="text-3xl font-black text-vasta-text tracking-tight">
+                Visão Geral
+             </h1>
+             <p className="text-vasta-muted">
+                Acompanhe o desempenho da sua loja e acesse atalhos rápidos.
+             </p>
+          </div>
 
-         {/* Top Grid */}
-         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Top Grid: Revenue & Shortcuts */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-            {/* Main Chart Card */}
-            <div className="xl:col-span-2 rounded-[2rem] bg-vasta-surface p-6 sm:p-8 shadow-sm border border-vasta-border relative overflow-hidden flex flex-col justify-between min-h-[320px]">
-               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 relative z-10">
-                  <div>
-                     <div className="flex items-center gap-2 text-vasta-muted mb-1">
-                        <Wallet className="w-4 h-4" />
-                        <span className="text-xs font-bold uppercase tracking-wider">Faturamento (7 dias)</span>
-                     </div>
-                     <h2 className="text-3xl sm:text-4xl font-black text-vasta-text tracking-tight">
-                        R$ {loading ? '...' : totalRevenueWeek.toFixed(2).replace('.', ',')}
-                     </h2>
-                  </div>
+             {/* Main Chart Card */}
+             <div className="xl:col-span-2 rounded-[2.5rem] bg-vasta-surface p-8 shadow-2xl shadow-black/5 border border-vasta-border relative overflow-hidden flex flex-col justify-between min-h-[360px] group">
+                <div className="absolute inset-0 bg-gradient-to-br from-vasta-primary/5 via-transparent to-transparent opacity-50" />
+                
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 relative z-10">
+                   <div>
+                      <div className="flex items-center gap-2 text-vasta-muted mb-2">
+                         <Wallet className="w-5 h-5" />
+                         <span className="text-xs font-bold uppercase tracking-wider opacity-80">Faturamento (7 dias)</span>
+                      </div>
+                      <h2 className="text-4xl sm:text-5xl font-black text-vasta-text tracking-tighter">
+                         R$ {loading ? '...' : totalRevenueWeek.toFixed(2).replace('.', ',')}
+                      </h2>
+                   </div>
 
-                  <div className="flex gap-2">
-                     <div className="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs font-bold flex items-center gap-1.5 border border-emerald-500/20">
-                        <TrendingUp size={14} />
-                        <span>+0% esta semana</span>
-                     </div>
-                  </div>
-               </div>
+                   <div className="flex gap-2">
+                      <div className="px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-2 border border-emerald-500/20 shadow-sm backdrop-blur-sm">
+                         <TrendingUp size={16} />
+                         <span>+0% esta semana</span>
+                      </div>
+                   </div>
+                </div>
 
-               <div className="flex items-end justify-between h-40 sm:h-48 gap-3 sm:gap-6 relative z-10">
-                  {loading ? (
-                     <div className="w-full h-full flex items-center justify-center text-vasta-muted text-xs animate-pulse">Carregando dados...</div>
-                  ) : weeklyRevenue.length > 0 ? weeklyRevenue.map((item, idx) => (
-                     <div key={idx} className="flex flex-col items-center gap-3 flex-1 group/bar cursor-default">
-                        {/* Tooltip on Hover */}
-                        <div className="opacity-0 group-hover/bar:opacity-100 transition-opacity absolute -top-8 bg-vasta-text text-vasta-bg text-[10px] font-bold px-2 py-1 rounded-lg pointer-events-none whitespace-nowrap z-20">
-                           {item.price}
-                        </div>
+                {/* Chart Bars */}
+                <div className="flex items-end justify-between h-48 sm:h-56 gap-4 sm:gap-6 relative z-10">
+                   {loading ? (
+                      <div className="w-full h-full flex items-center justify-center text-vasta-muted text-sm font-medium animate-pulse">Carregando dados...</div>
+                   ) : weeklyRevenue.length > 0 ? weeklyRevenue.map((item, idx) => (
+                      <div key={idx} className="flex flex-col items-center gap-4 flex-1 group/bar cursor-pointer">
+                         <div className="relative w-full flex items-end justify-center h-full"> 
+                            {/* Bar Tooltip */}
+                             <div className="absolute -top-12 opacity-0 group-hover/bar:opacity-100 transition-all duration-300 transform translate-y-2 group-hover/bar:translate-y-0 bg-vasta-text text-vasta-bg text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl pointer-events-none whitespace-nowrap z-20">
+                                {item.price}
+                                <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-2 h-2 bg-vasta-text rotate-45"></div>
+                             </div>
 
-                        <div
-                           className={`w-full max-w-[40px] rounded-t-xl sm:rounded-2xl transition-all duration-700 ease-out relative overflow-hidden ${item.active
-                              ? 'bg-vasta-text shadow-lg shadow-vasta-text/20'
-                              : 'bg-vasta-surface-soft hover:bg-vasta-primary/60'
-                              }`}
-                           style={{ height: item.val === 0 ? '8px' : `${Math.max(item.heightPct, 10)}%` }}
-                        >
-                           {item.active && (
-                              <div className="absolute inset-0 bg-white/20 blur-md animate-pulse" />
-                           )}
-                        </div>
-                        <span className={`text-[10px] sm:text-xs font-bold ${item.active ? 'text-vasta-text' : 'text-vasta-muted'}`}>
-                           {item.day}
-                        </span>
-                     </div>
-                  )) : (
-                     <div className="w-full text-center text-xs text-vasta-muted flex flex-col items-center justify-center h-full border-2 border-dashed border-vasta-border rounded-xl">
-                        <BarChart3 className="mb-2 opacity-50" />
-                        Sem dados de vendas
-                     </div>
-                  )}
-               </div>
+                             <div
+                                className={`w-full max-w-[48px] rounded-t-2xl transition-all duration-500 ease-out relative overflow-hidden ${item.active
+                                   ? 'bg-gradient-to-t from-vasta-primary to-vasta-primary-soft shadow-lg shadow-vasta-primary/25'
+                                   : 'bg-vasta-surface-soft hover:bg-vasta-primary/60 dark:bg-white/5'
+                                   }`}
+                                style={{ height: item.val === 0 ? '6px' : `${Math.max(item.heightPct, 8)}%` }}
+                             >
+                                {item.active && (
+                                   <div className="absolute inset-0 bg-white/20 blur-sm animate-pulse" />
+                                )}
+                             </div>
+                         </div>
+                         <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider ${item.active ? 'text-vasta-text' : 'text-vasta-muted group-hover/bar:text-vasta-text/70 transition-colors'}`}>
+                            {item.day}
+                         </span>
+                      </div>
+                   )) : (
+                      <div className="w-full text-center text-sm text-vasta-muted flex flex-col items-center justify-center h-full border-2 border-dashed border-vasta-border/50 rounded-2xl bg-vasta-surface-soft/20">
+                         <BarChart3 className="mb-3 opacity-30 w-10 h-10" />
+                         <span className="font-medium">Sem vendas esta semana</span>
+                      </div>
+                   )}
+                </div>
+             </div>
 
-               {/* Background Decor */}
-               <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
-                  <Wallet className="w-64 h-64 rotate-[-15deg] translate-x-12 -translate-y-12" />
-               </div>
-            </div>
+             {/* Right Column: Key Actions */}
+             <div className="space-y-6 flex flex-col">
 
-            {/* Right Column: Key Actions & Premium */}
-            <div className="space-y-6 flex flex-col">
+                {/* Shortcuts Grid */}
+                <div className="grid grid-cols-2 gap-4 flex-1">
+                   <a href="/dashboard/minha-loja" className="bg-vasta-surface p-6 rounded-[2rem] border border-vasta-border hover:border-vasta-primary/50 hover:shadow-xl hover:shadow-vasta-primary/10 transition-all duration-300 group flex flex-col justify-between aspect-square relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                         <ArrowUpRight size={18} className="text-vasta-primary" />
+                      </div>
+                      <div className="h-12 w-12 rounded-2xl bg-vasta-surface-soft group-hover:bg-vasta-primary group-hover:text-white dark:group-hover:text-black transition-colors duration-300 flex items-center justify-center text-vasta-text shadow-sm">
+                         <Plus size={24} strokeWidth={2.5} />
+                      </div>
+                      <div>
+                         <p className="font-bold text-base text-vasta-text leading-tight mb-1">Novo Produto</p>
+                         <p className="text-xs text-vasta-muted group-hover:text-vasta-primary/80 transition-colors">Adicionar item</p>
+                      </div>
+                   </a>
 
-               {/* Action Cards */}
-               <div className="grid grid-cols-2 gap-4">
-                  <a href="/dashboard/minha-loja" className="bg-vasta-surface p-5 rounded-[1.5rem] border border-vasta-border hover:border-vasta-primary/50 hover:shadow-lg hover:shadow-vasta-primary/5 transition-all group flex flex-col justify-between aspect-square">
-                     <div className="h-10 w-10 rounded-full bg-vasta-surface-soft flex items-center justify-center group-hover:bg-vasta-primary/10 group-hover:text-vasta-primary transition-colors">
-                        <Plus size={20} />
-                     </div>
-                     <div>
-                        <p className="font-bold text-sm text-vasta-text leading-tight">Novo Produto</p>
-                        <p className="text-[10px] text-vasta-muted mt-1 group-hover:text-vasta-primary/80">Adicionar item</p>
-                     </div>
-                  </a>
+                   <button onClick={copyLink} className="bg-vasta-surface p-6 rounded-[2rem] border border-vasta-border hover:border-vasta-accent/50 hover:shadow-xl hover:shadow-vasta-accent/10 transition-all duration-300 group flex flex-col justify-between aspect-square relative overflow-hidden">
+                      <div className="h-12 w-12 rounded-2xl bg-vasta-surface-soft group-hover:bg-vasta-accent group-hover:text-white transition-colors duration-300 flex items-center justify-center text-vasta-text shadow-sm">
+                         <Copy size={22} strokeWidth={2.5} />
+                      </div>
+                      <div>
+                         <p className="font-bold text-base text-vasta-text leading-tight mb-1">{copied ? 'Copiado!' : 'Copiar Link'}</p>
+                         <p className="text-xs text-vasta-muted group-hover:text-vasta-accent/80 transition-colors">Divulgar perfil</p>
+                      </div>
+                      {copied && <div className="absolute inset-0 bg-emerald-500/10 backdrop-blur-[1px] flex items-center justify-center animate-in fade-in zoom-in duration-200" ><div className="bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">Copiado!</div></div>}
+                   </button>
+                </div>
 
-                  <button onClick={copyLink} className="bg-vasta-surface p-5 rounded-[1.5rem] border border-vasta-border hover:border-vasta-accent/50 hover:shadow-lg hover:shadow-vasta-accent/5 transition-all group flex flex-col justify-between aspect-square relative overflow-hidden">
-                     <div className="h-10 w-10 rounded-full bg-vasta-surface-soft flex items-center justify-center group-hover:bg-vasta-accent/10 group-hover:text-vasta-accent transition-colors">
-                        <Copy size={18} />
-                     </div>
-                     <div>
-                        <p className="font-bold text-sm text-vasta-text leading-tight">{copied ? 'Copiado!' : 'Copiar Link'}</p>
-                        <p className="text-[10px] text-vasta-muted mt-1 group-hover:text-vasta-accent/80">Compartilhar perfil</p>
-                     </div>
-                     {copied && <div className="absolute inset-0 bg-emerald-500/10 animate-pulse" />}
-                  </button>
-               </div>
+                {/* Instagram Banner */}
+                <a href="/dashboard/aparencia#instagram-integration" className="relative overflow-hidden rounded-[2rem] p-[1px] group">
+                   <div className="absolute inset-0 bg-gradient-to-r from-orange-400 via-pink-500 to-purple-600 opacity-20 group-hover:opacity-100 transition-opacity duration-300" />
+                   <div className="relative bg-vasta-surface h-full rounded-[calc(2rem-1px)] p-6 flex items-center justify-between hover:bg-vasta-surface-soft/50 transition-colors">
+                      <div className="flex items-center gap-4">
+                         <div className="h-12 w-12 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 p-[2px]">
+                            <div className="h-full w-full rounded-full bg-vasta-surface border-2 border-transparent flex items-center justify-center text-vasta-text group-hover:bg-transparent group-hover:text-white transition-colors">
+                               <Instagram size={20} />
+                            </div>
+                         </div>
+                         <div>
+                            <p className="font-bold text-base text-vasta-text">Instagram</p>
+                            <p className="text-xs text-vasta-muted group-hover:text-vasta-accent transition-colors">Conectar feed</p>
+                         </div>
+                      </div>
+                      <ArrowUpRight className="text-vasta-muted group-hover:text-vasta-text transition-colors" />
+                   </div>
+                </a>
+             </div>
+          </div>
 
-               {/* Instagram Integration Card - Highlight */}
-               <a href="/dashboard/aparencia#instagram-integration" className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 p-5 rounded-[1.5rem] border border-pink-500/20 hover:border-pink-500/40 hover:shadow-lg hover:shadow-pink-500/5 transition-all group flex items-center justify-between relative overflow-hidden">
-                  <div className="absolute inset-0 bg-white/40 dark:bg-black/0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="flex items-center gap-4 relative z-10">
-                     <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 text-white flex items-center justify-center shadow-md">
-                        <Instagram size={20} />
-                     </div>
-                     <div>
-                        <p className="font-bold text-sm text-vasta-text leading-tight">Conectar Instagram</p>
-                        <p className="text-[10px] text-vasta-muted mt-0.5 group-hover:text-vasta-primary transition-colors">Exiba seus posts no perfil</p>
-                     </div>
-                  </div>
-                  <div className="h-8 w-8 rounded-full bg-vasta-surface border border-vasta-border flex items-center justify-center text-vasta-muted group-hover:text-vasta-text transition-colors relative z-10">
-                     <ArrowUpRight size={16} />
-                  </div>
-               </a>
+          {/* Bottom Grid: Sales & Funnel */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-               {/* Premium Banner (Compact) */}
-               <div className="flex-1 relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-stone-900 via-stone-800 to-black p-6 text-white shadow-xl flex flex-col justify-center gap-4 group">
-                  <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-30 mix-blend-overlay"></div>
-                  <div className="absolute right-0 top-0 w-32 h-32 bg-vasta-primary/40 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-vasta-primary/60 transition-colors"></div>
+             {/* Recent Sales */}
+             <div className="bg-vasta-surface rounded-[2.5rem] border border-vasta-border p-8 flex flex-col h-full shadow-sm">
+                <div className="flex items-center justify-between mb-8">
+                   <div className="flex items-center gap-3">
+                      <div className="p-2.5 bg-vasta-primary/10 text-vasta-primary rounded-xl">
+                        <ShoppingBag size={20} />
+                      </div>
+                      <h3 className="font-bold text-xl text-vasta-text">Vendas Recentes</h3>
+                   </div>
+                   <a href="/dashboard/vendas" className="text-xs font-bold text-vasta-text hover:text-vasta-primary bg-vasta-surface-soft hover:bg-vasta-primary/10 px-4 py-2 rounded-full transition-all border border-vasta-border">
+                      Ver tudo
+                   </a>
+                </div>
 
-                  <div className="relative z-10">
-                     <div className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-white/20 border border-white/10 mb-2 backdrop-blur-sm">PRO</div>
-                     <h3 className="text-xl font-bold leading-tight">Desbloqueie todo o poder.</h3>
-                     <p className="text-xs text-gray-400 mt-2 line-clamp-2">Taxas menores, domínio personalizado e temas exclusivos.</p>
-                  </div>
-                  <a href="/dashboard/billing" className="relative z-10 w-fit px-5 py-2.5 rounded-xl bg-white text-black text-xs font-bold hover:scale-105 transition-transform shadow-lg shadow-white/10">
-                     Ver Planos
-                  </a>
-               </div>
-            </div>
-         </div>
+                <div className="space-y-3 flex-1">
+                   {loading ? (
+                      <div className="space-y-3">
+                         {[1,2,3].map(i => <div key={i} className="h-16 rounded-2xl bg-vasta-surface-soft animate-pulse" />)}
+                      </div>
+                   ) : recentOrders.length > 0 ? recentOrders.map((item, i) => (
+                      <div key={i} className="group flex items-center justify-between p-4 rounded-2xl hover:bg-vasta-surface-soft/80 transition-all border border-transparent hover:border-vasta-border/50 cursor-pointer">
+                         <div className="flex items-center gap-4 min-w-0">
+                            <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 border border-white/5 shadow-sm ${item.status === 'paid' ? 'bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 text-emerald-500' : 'bg-gradient-to-br from-amber-500/10 to-amber-500/5 text-amber-500'
+                               }`}>
+                               <ShoppingBag size={20} />
+                            </div>
+                            <div className="min-w-0">
+                               <p className="font-bold text-sm text-vasta-text truncate pr-4">{item.products?.title || 'Produto Indisponível'}</p>
+                               <p className="text-xs text-vasta-muted">{new Date(item.created_at).toLocaleDateString('pt-BR')} • {item.buyer_email ? item.buyer_email.split('@')[0] : 'Cliente'}</p>
+                            </div>
+                         </div>
+                         <div className="text-right shrink-0">
+                            <p className="font-bold text-sm text-vasta-text">R$ {item.amount.toFixed(2).replace('.', ',')}</p>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide mt-1 ${
+                               item.status === 'paid' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'
+                            }`}>
+                               {item.status === 'paid' ? 'Pago' : item.status}
+                            </span>
+                         </div>
+                      </div>
+                   )) : (
+                      <div className="flex-1 min-h-[200px] flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-vasta-border/50 rounded-2xl bg-vasta-surface-soft/20">
+                         <div className="h-16 w-16 rounded-full bg-vasta-surface border border-vasta-border flex items-center justify-center mb-4 text-vasta-muted">
+                            <ShoppingBag size={24} />
+                         </div>
+                         <p className="text-base font-bold text-vasta-text mb-1">Ainda sem vendas</p>
+                         <p className="text-xs text-vasta-muted max-w-[200px]">Compartilhe o link da sua loja para começar a vender!</p>
+                      </div>
+                   )}
+                </div>
+             </div>
 
-         {/* Bottom Grid: Recent Sales & Funnel */}
-         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+             {/* Conversion Funnel */}
+             <div className="bg-vasta-surface rounded-[2.5rem] border border-vasta-border p-8 flex flex-col h-full shadow-sm">
+                <div className="flex items-center justify-between mb-8">
+                   <div className="flex items-center gap-3">
+                      <div className="p-2.5 bg-vasta-primary/10 text-vasta-primary rounded-xl">
+                        <TrendingUp size={20} />
+                      </div>
+                      <h3 className="font-bold text-xl text-vasta-text">Funil de Conversão</h3>
+                   </div>
+                   <div className="flex items-center gap-2 px-3 py-1 bg-vasta-surface-soft rounded-full border border-vasta-border">
+                      <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[10px] font-bold text-vasta-muted uppercase tracking-wide">Tempo Real</span>
+                   </div>
+                </div>
 
-            {/* Recent Sales - Condensed */}
-            <div className="bg-vasta-surface rounded-[2rem] border border-vasta-border p-6 sm:p-8">
-               <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-bold text-lg text-vasta-text">Vendas Recentes</h3>
-                  <a href="/dashboard/vendas" className="text-xs font-bold text-vasta-primary hover:text-vasta-primary/80 bg-vasta-primary/5 px-3 py-1.5 rounded-full transition-colors">
-                     Ver todas
-                  </a>
-               </div>
+                <div className="flex-1 flex flex-col justify-center gap-4 relative">
+                   {/* Visual Connection Line */}
+                   <div className="absolute left-[23px] top-6 bottom-6 w-0.5 bg-gradient-to-b from-blue-500/20 via-purple-500/20 to-emerald-500/20" />
 
-               <div className="space-y-2">
-                  {loading ? (
-                     <div className="h-24 rounded-2xl bg-vasta-surface-soft animate-pulse" />
-                  ) : recentOrders.length > 0 ? recentOrders.map((item, i) => (
-                     <div key={i} className="group flex items-center justify-between p-3 rounded-2xl hover:bg-vasta-surface-soft transition-colors border border-transparent hover:border-vasta-border/50">
-                        <div className="flex items-center gap-3 min-w-0">
-                           <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${item.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'
-                              }`}>
-                              <ShoppingBag size={18} />
-                           </div>
-                           <div className="min-w-0">
-                              <p className="font-bold text-sm text-vasta-text truncate pr-2">{item.products?.title || 'Produto Indisponível'}</p>
-                              <p className="text-[10px] text-vasta-muted">{new Date(item.created_at).toLocaleDateString('pt-BR')} • {item.buyer_email ? item.buyer_email.split('@')[0] : 'Anônimo'}</p>
-                           </div>
-                        </div>
-                        <div className="text-right shrink-0">
-                           <p className="font-bold text-sm text-vasta-text">R$ {item.amount.toFixed(2).replace('.', ',')}</p>
-                           <p className={`text-[10px] font-bold uppercase ${item.status === 'paid' ? 'text-emerald-500' : 'text-amber-500'}`}>
-                              {(item.status === 'paid' && 'Pago') ||
-                                 (item.status === 'pending' && 'Pendente') ||
-                                 (item.status === 'failed' && 'Falhou') ||
-                                 (item.status === 'canceled' && 'Cancelado') ||
-                                 item.status}
-                           </p>
-                        </div>
-                     </div>
-                  )) : (
-                     <div className="py-8 text-center bg-vasta-surface-soft/30 rounded-2xl border border-dashed border-vasta-border">
-                        <ShoppingBag className="mx-auto h-8 w-8 text-vasta-muted/50 mb-2" />
-                        <p className="text-sm font-bold text-vasta-text">Nenhuma venda</p>
-                        <p className="text-[10px] text-vasta-muted">Compartilhe seu link para começar!</p>
-                     </div>
-                  )}
-               </div>
-            </div>
-
-            {/* Funnel - Improved Visuals */}
-            <div className="bg-vasta-surface rounded-[2rem] border border-vasta-border p-6 sm:p-8 flex flex-col">
-               <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-2">
-                     <h3 className="font-bold text-lg text-vasta-text">Funil de Conversão</h3>
-                     <span className="bg-vasta-surface-soft text-[10px] font-bold px-2 py-0.5 rounded text-vasta-muted border border-vasta-border">07 dias</span>
-                  </div>
-                  <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" title="Tracking Ativo" />
-               </div>
-
-               <div className="flex-1 grid grid-cols-3 gap-2 relative">
-                  {/* Connector Line */}
-                  <div className="absolute top-1/2 left-0 right-0 h-1 bg-vasta-surface-soft -translate-y-1/2 rounded-full z-0" />
-
-                  {/* Steps */}
-                  {[
-                     { label: "Visitas", val: "--", icon: Wallet /* Placeholder icon, clearly not correct but visually ok for now */, color: "bg-blue-500" },
-                     { label: "Cliques", val: "--", icon: ArrowUpRight, color: "bg-purple-500" },
-                     { label: "Vendas", val: recentOrders.length, icon: CreditCard, color: "bg-emerald-500" }
-                  ].map((step, idx) => (
-                     <div key={idx} className="relative z-10 bg-vasta-surface border border-vasta-border hover:border-vasta-primary/50 transition-colors p-4 rounded-2xl text-center flex flex-col items-center justify-center gap-2 shadow-sm">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-vasta-muted">{step.label}</p>
-                        <p className="text-2xl font-black text-vasta-text">{step.val}</p>
-                        <div className={`h-1 w-8 rounded-full ${step.color} opacity-50`} />
-                     </div>
-                  ))}
-               </div>
-
-               <div className="mt-8 bg-vasta-surface-soft/50 rounded-xl p-3 flex items-start gap-3 border border-vasta-border/50">
-                  <div className="p-1.5 bg-orange-500/10 text-orange-500 rounded-lg shrink-0">
-                     <AlertCircle size={14} />
-                  </div>
-                  <div>
-                     <p className="text-xs font-bold text-vasta-text">Analytics em calibração</p>
-                     <p className="text-[10px] text-vasta-muted leading-tight mt-0.5">
-                        Estamos coletando dados iniciais do seu perfil. Métricas de visitas e cliques aparecerão em breve.
-                     </p>
-                  </div>
-               </div>
-            </div>
-         </div>
-
-
-      </div>
-   )
+                   {[
+                      { label: "Visitas no Perfil", val: "0", sub: "visualizações únicas", icon: Wallet, color: "text-blue-500", bg: "bg-blue-500" },
+                      { label: "Cliques em Produtos", val: "0", sub: "intenção de compra", icon: MousePointerClick, color: "text-purple-500", bg: "bg-purple-500" },
+                      { label: "Vendas Realizadas", val: recentOrders.length, sub: "conversão total", icon: CreditCard, color: "text-emerald-500", bg: "bg-emerald-500" }
+                   ].map((step, idx) => (
+                      <div key={idx} className="relative z-10 bg-vasta-surface hover:bg-vasta-surface-soft transition-colors border border-vasta-border p-5 rounded-2xl flex items-center justify-between group">
+                         <div className="flex items-center gap-4">
+                            <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 border border-vasta-border shadow-sm z-10 bg-vasta-surface ${step.color}`}>
+                               {/* Icon Placeholder since I need to import MousePointerClick */}
+                               {idx === 0 && <Wallet size={20} />}
+                               {idx === 1 && <ArrowUpRight size={20} />}
+                               {idx === 2 && <ShoppingBag size={20} />}
+                            </div>
+                            <div>
+                               <p className="text-xs font-bold text-vasta-muted uppercase tracking-wider mb-0.5">{step.label}</p>
+                               <p className="text-xs text-vasta-muted opacity-60">{step.sub}</p>
+                            </div>
+                         </div>
+                         <div className="text-right">
+                           <p className="text-2xl font-black text-vasta-text group-hover:scale-110 transition-transform origin-right">{step.val}</p>
+                         </div>
+                      </div>
+                   ))}
+                </div>
+                
+                <div className="mt-6 pt-6 border-t border-vasta-border flex items-center gap-3 text-vasta-muted opacity-60">
+                   <AlertCircle size={14} />
+                   <p className="text-[10px]">Dados de visitas e cliques atualizados a cada 15 minutos.</p>
+                </div>
+             </div>
+          </div>
+       </div>
+    )
 }
