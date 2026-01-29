@@ -379,6 +379,7 @@ export default function DashboardLayout({ children }: Props) {
                   </div>
 
                   <div className="space-y-2">
+                    <button
                       onClick={() => {
                         const url = `https://vasta.pro/${settings.username}`;
                         if (navigator.share) {
