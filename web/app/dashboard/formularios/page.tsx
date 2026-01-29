@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react"
 import {
   FileText, Loader2, Mail, Calendar, Eye, EyeOff,
-  Trash2, Search, Filter, Download, CheckCircle2, XCircle
+  Trash2, Search, Filter, Download, CheckCircle2, XCircle,
+  Archive, RotateCcw, AlertTriangle
 } from "lucide-react"
 import { createClient } from "../../../lib/supabase/client"
 import { useAuth } from "../../../lib/AuthContext"
+import { ConfirmModal } from "../../../components/ui/ConfirmModal"
 
 interface FormSubmission {
   id: number
@@ -14,6 +16,7 @@ interface FormSubmission {
   data: Record<string, any>
   submitted_at: string
   read: boolean
+  archived: boolean
   form?: {
     title: string
   }
@@ -40,6 +43,13 @@ export default function FormulariosPage() {
   const [selectedForm, setSelectedForm] = useState<number | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [filterUnread, setFilterUnread] = useState(false)
+  const [viewMode, setViewMode] = useState<'active' | 'archived'>('active')
+
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    submissionId: number | null
+  }>({ isOpen: false, submissionId: null })
+  const [actionLoading, setActionLoading] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -125,25 +135,75 @@ export default function FormulariosPage() {
     }
   }
 
-  const deleteSubmission = async (id: number) => {
-    if (!confirm('Tem certeza que deseja excluir esta submissão?')) return
-
+  const archiveSubmission = async (id: number) => {
     try {
       const { error } = await supabase
         .from('form_submissions')
-        .delete()
+        .update({ archived: true })
         .eq('id', id)
 
       if (error) throw error
 
-      setSubmissions(prev => prev.filter(s => s.id !== id))
+      setSubmissions(prev => prev.map(s =>
+        s.id === id ? { ...s, archived: true } : s
+      ))
+    } catch (error) {
+      console.error("Error archiving submission:", error)
+      alert("Erro ao arquivar submissão")
+    }
+  }
+
+  const unarchiveSubmission = async (id: number) => {
+    try {
+      const { error } = await supabase
+        .from('form_submissions')
+        .update({ archived: false })
+        .eq('id', id)
+
+      if (error) throw error
+
+      setSubmissions(prev => prev.map(s =>
+        s.id === id ? { ...s, archived: false } : s
+      ))
+    } catch (error) {
+      console.error("Error unarchiving submission:", error)
+      alert("Erro ao restaurar submissão")
+    }
+  }
+
+  const requestDelete = (id: number) => {
+    setConfirmModal({ isOpen: true, submissionId: id })
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmModal.submissionId) return
+
+    setActionLoading(true)
+    try {
+      const { error } = await supabase
+        .from('form_submissions')
+        .delete()
+        .eq('id', confirmModal.submissionId)
+
+      if (error) throw error
+
+      setSubmissions(prev => prev.filter(s => s.id !== confirmModal.submissionId))
+      setConfirmModal({ isOpen: false, submissionId: null })
     } catch (error) {
       console.error("Error deleting submission:", error)
       alert("Erro ao excluir submissão")
+    } finally {
+      setActionLoading(false)
     }
   }
 
   const filteredSubmissions = submissions.filter(submission => {
+    // Filter by view mode (active vs archived)
+    // Note: If archived field is missing (old data), treat as active (false)
+    const isArchived = !!submission.archived
+    if (viewMode === 'active' && isArchived) return false
+    if (viewMode === 'archived' && !isArchived) return false
+
     if (selectedForm && submission.form_id !== selectedForm) return false
     if (filterUnread && submission.read) return false
     if (searchQuery) {
@@ -215,38 +275,63 @@ export default function FormulariosPage() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-vasta-muted" size={18} />
-          <input
-            type="text"
-            placeholder="Buscar por formulário ou conteúdo..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border border-vasta-border bg-vasta-surface-soft pl-10 pr-4 py-3 text-sm text-vasta-text focus:border-vasta-primary focus:ring-1 focus:ring-vasta-primary outline-none"
-          />
+      {/* Filters & Tabs */}
+      <div className="flex flex-col gap-4">
+        {/* Tabs */}
+        <div className="flex p-1 bg-vasta-surface-soft rounded-xl border border-vasta-border w-fit">
+          <button
+            onClick={() => setViewMode('active')}
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === 'active'
+              ? 'bg-vasta-surface text-vasta-text shadow-sm'
+              : 'text-vasta-muted hover:text-vasta-text'
+              }`}
+          >
+            Caixa de Entrada
+          </button>
+          <button
+            onClick={() => setViewMode('archived')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === 'archived'
+              ? 'bg-vasta-surface text-vasta-text shadow-sm'
+              : 'text-vasta-muted hover:text-vasta-text'
+              }`}
+          >
+            <Archive size={16} />
+            Arquivados
+          </button>
         </div>
-        <select
-          value={selectedForm || ''}
-          onChange={e => setSelectedForm(e.target.value ? Number(e.target.value) : null)}
-          className="rounded-xl border border-vasta-border bg-vasta-surface-soft px-4 py-3 text-sm text-vasta-text focus:border-vasta-primary focus:ring-1 focus:ring-vasta-primary outline-none min-w-[200px]"
-        >
-          <option value="">Todos os formulários</option>
-          {forms.map(form => (
-            <option key={form.id} value={form.id}>{form.title}</option>
-          ))}
-        </select>
-        <button
-          onClick={() => setFilterUnread(!filterUnread)}
-          className={`flex items-center gap-2 rounded-xl border border-vasta-border px-4 py-3 text-sm font-bold transition-all ${filterUnread
+
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-vasta-muted" size={18} />
+            <input
+              type="text"
+              placeholder="Buscar por formulário ou conteúdo..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full rounded-xl border border-vasta-border bg-vasta-surface-soft pl-10 pr-4 py-3 text-sm text-vasta-text focus:border-vasta-primary focus:ring-1 focus:ring-vasta-primary outline-none"
+            />
+          </div>
+          <select
+            value={selectedForm || ''}
+            onChange={e => setSelectedForm(e.target.value ? Number(e.target.value) : null)}
+            className="rounded-xl border border-vasta-border bg-vasta-surface-soft px-4 py-3 text-sm text-vasta-text focus:border-vasta-primary focus:ring-1 focus:ring-vasta-primary outline-none min-w-[200px]"
+          >
+            <option value="">Todos os formulários</option>
+            {forms.map(form => (
+              <option key={form.id} value={form.id}>{form.title}</option>
+            ))}
+          </select>
+          <button
+            onClick={() => setFilterUnread(!filterUnread)}
+            className={`flex items-center gap-2 rounded-xl border border-vasta-border px-4 py-3 text-sm font-bold transition-all ${filterUnread
               ? 'bg-vasta-primary text-white border-vasta-primary'
               : 'bg-vasta-surface-soft text-vasta-text hover:bg-vasta-surface'
-            }`}
-        >
-          <Filter size={16} />
-          Não lidos
-        </button>
+              }`}
+          >
+            <Filter size={16} />
+            Não lidos
+          </button>
+        </div>
       </div>
 
       {/* Submissions List */}
@@ -266,8 +351,8 @@ export default function FormulariosPage() {
             <div
               key={submission.id}
               className={`p-5 rounded-2xl border transition-all ${submission.read
-                  ? 'border-vasta-border bg-vasta-surface-soft'
-                  : 'border-vasta-primary/30 bg-vasta-primary/5'
+                ? 'border-vasta-border bg-vasta-surface-soft'
+                : 'border-vasta-primary/30 bg-vasta-primary/5'
                 }`}
             >
               <div className="flex items-start justify-between gap-4 mb-4">
@@ -293,20 +378,40 @@ export default function FormulariosPage() {
                   <button
                     onClick={() => markAsRead(submission.id, !submission.read)}
                     className={`p-2 rounded-lg transition-colors ${submission.read
-                        ? 'text-vasta-muted hover:text-vasta-text hover:bg-vasta-surface-soft'
-                        : 'text-vasta-primary hover:bg-vasta-primary/10'
+                      ? 'text-vasta-muted hover:text-vasta-text hover:bg-vasta-surface-soft'
+                      : 'text-vasta-primary hover:bg-vasta-primary/10'
                       }`}
                     title={submission.read ? 'Marcar como não lido' : 'Marcar como lido'}
                   >
                     {submission.read ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
-                  <button
-                    onClick={() => deleteSubmission(submission.id)}
-                    className="p-2 rounded-lg text-vasta-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                    title="Excluir"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+
+                  {viewMode === 'active' ? (
+                    <button
+                      onClick={() => archiveSubmission(submission.id)}
+                      className="p-2 rounded-lg text-vasta-muted hover:text-orange-500 hover:bg-orange-500/10 transition-colors"
+                      title="Arquivar"
+                    >
+                      <Archive size={18} />
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => unarchiveSubmission(submission.id)}
+                        className="p-2 rounded-lg text-vasta-muted hover:text-green-500 hover:bg-green-500/10 transition-colors"
+                        title="Restaurar"
+                      >
+                        <RotateCcw size={18} />
+                      </button>
+                      <button
+                        onClick={() => requestDelete(submission.id)}
+                        className="p-2 rounded-lg text-vasta-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                        title="Excluir permanentemente"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -324,6 +429,18 @@ export default function FormulariosPage() {
           ))}
         </div>
       )}
+
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={handleDeleteConfirm}
+        title="Excluir submissão permanentemente?"
+        message="Esta ação não poderá ser desfeita e a submissão será removida do banco de dados."
+        confirmText="Excluir"
+        variant="danger"
+        loading={actionLoading}
+      />
     </div>
   )
 }
