@@ -2,9 +2,7 @@
   "name": "vasta-web",
   "version": "0.1.0",
   "private": true,
-  "engines": {
-    "node": ">=24.0.0"
-  },
+  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
