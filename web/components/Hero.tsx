@@ -424,8 +424,8 @@ export function Hero() {
                 <span>Sem cartão de crédito</span>
               </div>
             </motion.div>
-          </div>
-        </div>
+          </motion.div>
+
 
         {/* Right Side: Enhanced Phone Mockup */}
         <motion.div 
