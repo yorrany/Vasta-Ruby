@@ -14,9 +14,26 @@ import {
   Loader2,
   Sparkles,
   ShoppingBag,
-  Camera
+  Camera,
+  ShoppingBag
 } from "lucide-react";
+import { 
+  motion, 
+  AnimatePresence, 
+  useMotionValue, 
+  useSpring, 
+  useTransform 
+} from "framer-motion";
 import { useAuth } from "../lib/AuthContext";
+
+const FADE_UP_VARIANTS = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
+
+const STAGGER_CONTAINER = {
+  visible: { transition: { staggerChildren: 0.1 } },
+};
 
 const CURATED_PORTRAITS = [
   "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1", // Man serious corporate
@@ -82,6 +99,30 @@ export function Hero() {
   );
   const [currentTime, setCurrentTime] = useState("9:41");
   const [index, setIndex] = useState(0);
+
+  // 3D Tilt Logic
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const mouseX = useSpring(x, { stiffness: 500, damping: 50 });
+  const mouseY = useSpring(y, { stiffness: 500, damping: 50 });
+
+  const rotateX = useTransform(mouseY, [-0.5, 0.5], ["7deg", "-7deg"]);
+  const rotateY = useTransform(mouseX, [-0.5, 0.5], ["-7deg", "7deg"]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseXFromCenter = e.clientX - rect.left - width / 2;
+    const mouseYFromCenter = e.clientY - rect.top - height / 2;
+    x.set(mouseXFromCenter / width);
+    y.set(mouseYFromCenter / height);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -203,44 +244,85 @@ export function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-vasta-border pt-24 pb-20 md:pb-32 lg:pt-40 bg-vasta-bg">
       {/* Background radial gradients for depth */}
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.15),transparent_50%),radial-gradient(circle_at_bottom_right,rgba(236,72,153,0.1),transparent_50%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.08),transparent_50%),radial-gradient(circle_at_bottom_right,rgba(236,72,153,0.05),transparent_50%)]" />
+      <motion.div 
+        animate={{ 
+          scale: [1, 1.1, 1],
+          opacity: [0.3, 0.5, 0.3] 
+        }}
+        transition={{ 
+          duration: 8, 
+          repeat: Infinity, 
+          ease: "easeInOut" 
+        }}
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.15),transparent_50%),radial-gradient(circle_at_bottom_right,rgba(236,72,153,0.1),transparent_50%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.08),transparent_50%),radial-gradient(circle_at_bottom_right,rgba(236,72,153,0.05),transparent_50%)]" 
+      />
 
       {/* Floating abstract decorative elements */}
-      <div className="absolute top-20 left-10 h-24 w-24 rounded-full bg-vasta-primary/5 blur-2xl animate-pulse-soft" />
-      <div className="absolute bottom-40 right-10 h-32 w-32 rounded-full bg-vasta-accent/5 blur-3xl animate-pulse-soft delay-500" />
+      <motion.div 
+        animate={{ y: [0, -20, 0], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-20 left-10 h-24 w-24 rounded-full bg-vasta-primary/5 blur-2xl" 
+      />
+      <motion.div 
+        animate={{ y: [0, 30, 0], opacity: [0.3, 0.6, 0.3] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        className="absolute bottom-40 right-10 h-32 w-32 rounded-full bg-vasta-accent/5 blur-3xl" 
+      />
 
       <div className="mx-auto flex max-w-7xl flex-col gap-16 px-4 md:flex-row md:items-center lg:gap-24">
         {/* Left Side: Content */}
-        <div
-          className={`flex-1 space-y-8 text-center md:text-left transition-opacity duration-700 ${mounted ? "opacity-100" : "opacity-0"
-            }`}
+        <motion.div
+            initial="hidden"
+            animate={mounted ? "visible" : "hidden"}
+            variants={STAGGER_CONTAINER}
+            className="flex-1 space-y-8 text-center md:text-left"
         >
-          <div className="inline-flex items-center gap-2 rounded-full border border-vasta-primary/30 bg-vasta-primary/10 px-4 py-1.5 text-xs font-bold tracking-wide text-vasta-primary md:text-sm shadow-sm animate-fade-in-up">
+          <motion.div variants={FADE_UP_VARIANTS} className="inline-flex items-center gap-2 rounded-full border border-vasta-primary/30 bg-vasta-primary/10 px-4 py-1.5 text-xs font-bold tracking-wide text-vasta-primary md:text-sm shadow-sm">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-vasta-primary opacity-75"></span>
               <span className="relative inline-flex h-2 w-2 rounded-full bg-vasta-primary"></span>
             </span>
             COMECE GRATUITAMENTE
-          </div>
+          </motion.div>
 
-          <div className="space-y-6 animate-fade-in-up delay-100 text-left">
-            <h1 className="text-4xl xs:text-[2.75rem] font-black tracking-tighter text-vasta-text sm:text-5xl lg:text-6xl leading-tight max-w-4xl">
+          <div className="space-y-6 text-left">
+            <motion.h1 variants={FADE_UP_VARIANTS} className="text-4xl xs:text-[2.75rem] font-black tracking-tighter text-vasta-text sm:text-5xl lg:text-6xl leading-tight max-w-4xl">
               <span className="whitespace-nowrap">A plataforma para</span> <br className="hidden md:block" />
-              <span key={ROLES[index]} className="gradient-title relative inline-block animate-fade-in-up pb-2">
-                {ROLES[index]}.
-                <div className="absolute -bottom-1 left-0 h-2 w-full bg-vasta-primary/20 blur-md rounded-full -z-10 animate-pulse-soft" />
-              </span>
-            </h1>
-            <p className="max-w-xl text-lg text-vasta-muted md:text-xl leading-relaxed font-medium">
+              <div className="relative inline-block h-[1.2em] w-full overflow-hidden align-bottom">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={ROLES[index]}
+                    initial={{ y: 40, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -40, opacity: 0 }}
+                    transition={{ duration: 0.5, ease: "circOut" }}
+                    className="gradient-title absolute left-0 top-0 block pb-2"
+                  >
+                    {ROLES[index]}.
+                    <div className="absolute -bottom-1 left-0 h-2 w-full bg-vasta-primary/20 blur-md rounded-full -z-10" />
+                  </motion.span>
+                </AnimatePresence>
+              </div>
+            </motion.h1>
+            <motion.p variants={FADE_UP_VARIANTS} className="max-w-xl text-lg text-vasta-muted md:text-xl leading-relaxed font-medium">
               A solução completa para sua marca.{" "}
-              <span key={ACTIONS[index % ACTIONS.length].verb} className="text-vasta-text font-bold inline-block animate-fade-in">
-                {ACTIONS[index % ACTIONS.length].verb}
-              </span>{" "}
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={ACTIONS[index % ACTIONS.length].verb}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-vasta-text font-bold inline-block"
+                >
+                  {ACTIONS[index % ACTIONS.length].verb}
+                </motion.span>
+              </AnimatePresence>{" "}
               {ACTIONS[index % ACTIONS.length].text} e escale seu negócio com o Vasta.
-            </p>
+            </motion.p>
           </div>
 
-          <div className="flex flex-col gap-4 sm:mx-auto sm:max-w-[400px] md:mx-0 animate-fade-in-up delay-200">
+          <motion.div variants={FADE_UP_VARIANTS} className="flex flex-col gap-4 sm:mx-auto sm:max-w-[400px] md:mx-0">
             <div
               className={`group flex items-center gap-1 rounded-[2rem] border p-1 transition-all duration-300 shadow-lg hover:shadow-xl ${availability?.available
                 ? "border-emerald-500/50 bg-emerald-500/5 ring-4 ring-emerald-500/10"
@@ -341,18 +423,35 @@ export function Hero() {
                 </div>
                 <span>Sem cartão de crédito</span>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
 
         {/* Right Side: Enhanced Phone Mockup */}
-        <div className="flex flex-1 justify-center lg:justify-end perspective-[2000px]">
-          <div className="relative group animate-float">
+        <motion.div 
+          className="flex flex-1 justify-center lg:justify-end perspective-[2000px]"
+          initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+          style={{ perspective: 1000 }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        >
+          <motion.div 
+            style={{ 
+              rotateX, 
+              rotateY,
+              transformStyle: "preserve-3d"
+            }}
+            className="relative group"
+          >
             {/* Glow behind phone */}
-            <div className="absolute -inset-10 rounded-[4rem] bg-gradient-to-tr from-vasta-primary/40 to-vasta-accent/40 opacity-50 blur-3xl transition-opacity duration-1000 group-hover:opacity-70 dark:mix-blend-screen" />
+            <div className="absolute -inset-10 rounded-[4rem] bg-gradient-to-tr from-vasta-primary/40 to-vasta-accent/40 opacity-50 blur-3xl transition-opacity duration-1000 group-hover:opacity-70 dark:mix-blend-screen" 
+               style={{ transform: "translateZ(-50px)" }}
+            />
 
             {/* Phone Frame - "Titanium" Look */}
-            <div className="relative h-[500px] w-[250px] xs:h-[580px] xs:w-[290px] sm:h-[680px] sm:w-[340px] rounded-[2.5rem] sm:rounded-[3.5rem] bg-gradient-to-br from-gray-300 via-gray-100 to-gray-300 dark:from-gray-700 dark:via-gray-600 dark:to-gray-800 p-[3px] sm:p-[4px] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] sm:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] ring-1 ring-black/10 transition-transform duration-500 hover:rotate-[-2deg] hover:scale-[1.01]">
+            <div className="relative h-[500px] w-[250px] xs:h-[580px] xs:w-[290px] sm:h-[680px] sm:w-[340px] rounded-[2.5rem] sm:rounded-[3.5rem] bg-gradient-to-br from-gray-300 via-gray-100 to-gray-300 dark:from-gray-700 dark:via-gray-600 dark:to-gray-800 p-[3px] sm:p-[4px] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] sm:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] ring-1 ring-black/10 transition-shadow duration-500">
               {/* Inner Frame Border */}
               <div className="absolute inset-0 rounded-[3.5rem] border-[6px] border-black/5 dark:border-black/20 pointer-events-none z-20" />
               {/* Screen Bezel */}
@@ -623,8 +722,8 @@ export function Hero() {
               <div className="absolute -right-[5px] top-40 h-20 w-[4px] rounded-r-md bg-gray-400 dark:bg-gray-600" />{" "}
               {/* Power */}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );
