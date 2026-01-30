@@ -96,7 +96,7 @@ export function ComparisonCalculator() {
                 </p>
             </div>
 
-            <div className="relative z-10 grid lg:grid-cols-12 gap-8 items-start">
+            <div className="relative z-10 grid lg:grid-cols-12 gap-8 items-center">
                 
                 {/* Left Column: Controls */}
                 <div className="lg:col-span-5 space-y-4">
@@ -149,10 +149,10 @@ export function ComparisonCalculator() {
                 </div>
 
                 {/* Right Column: Visual Result */}
-                <div className="lg:col-span-7 bg-vasta-bg rounded-[2.5rem] border border-vasta-border p-8 lg:p-10 relative overflow-hidden group">
+                <div className="lg:col-span-7 bg-vasta-bg rounded-[2.5rem] border border-vasta-border p-8 lg:p-10 relative overflow-hidden group h-full flex flex-col justify-center">
                      <div className="absolute top-0 right-0 p-32 bg-emerald-500/10 blur-[100px] rounded-full pointer-events-none group-hover:bg-emerald-500/20 transition-colors duration-700" />
                     
-                    <div className="relative z-10 flex flex-col gap-8 h-full">
+                    <div className="relative z-10 flex flex-col gap-10 w-full">
                         {/* Winner Header */}
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-vasta-border/50 pb-8">
                             <div>
@@ -174,32 +174,32 @@ export function ComparisonCalculator() {
                         </div>
 
                         {/* Graph Visualization */}
-                        <div className="flex items-end gap-2 h-48 md:h-56 mt-auto">
+                        <div className="flex items-end gap-4 h-48 md:h-56 mt-4 px-4">
                             {/* Hotmart */}
                             <div className="flex-1 flex flex-col justify-end group/bar relative h-full">
-                                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-red-500/10 text-red-500 text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap">
+                                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-red-500/10 text-red-500 text-[10px] font-bold px-2 py-1 rounded opacity-100 transition-opacity whitespace-nowrap border border-red-500/20">
                                     -{formatCurrency(results.vasta.net - results.hotmart.net)}
                                 </span>
                                 <div 
                                     style={{ height: `${(results.hotmart.net / results.maxNet) * 100}%` }} 
-                                    className="w-full bg-vasta-border/40 rounded-t-xl relative overflow-hidden transition-all duration-500 group-hover/bar:bg-red-500/20"
+                                    className="w-full bg-red-500/5 rounded-t-xl relative overflow-hidden transition-all duration-500 border-t border-x border-red-500/20"
                                 >
                                      {/* Pattern overlay */}
-                                     <div className="absolute inset-0 opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+                                     {/* <div className="absolute inset-0 opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div> */}
                                 </div>
                                 <span className="text-[10px] font-bold text-vasta-muted mt-3 text-center uppercase tracking-wide">Hotmart</span>
                             </div>
 
                             {/* Kiwify */}
                             <div className="flex-1 flex flex-col justify-end group/bar relative h-full">
-                                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-red-500/10 text-red-500 text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap">
+                                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-red-500/10 text-red-500 text-[10px] font-bold px-2 py-1 rounded opacity-100 transition-opacity whitespace-nowrap border border-red-500/20">
                                     -{formatCurrency(results.vasta.net - results.kiwify.net)}
                                 </span>
                                 <div 
                                     style={{ height: `${(results.kiwify.net / results.maxNet) * 100}%` }} 
-                                    className="w-full bg-vasta-border/40 rounded-t-xl relative overflow-hidden transition-all duration-500 group-hover/bar:bg-red-500/20"
+                                    className="w-full bg-red-500/5 rounded-t-xl relative overflow-hidden transition-all duration-500 border-t border-x border-red-500/20"
                                 >
-                                    <div className="absolute inset-0 opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+                                    {/* <div className="absolute inset-0 opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div> */}
                                 </div>
                                 <span className="text-[10px] font-bold text-vasta-muted mt-3 text-center uppercase tracking-wide">Kiwify</span>
                             </div>
@@ -213,7 +213,7 @@ export function ComparisonCalculator() {
                                 </div>
                                 <div 
                                     style={{ height: `100%` }} 
-                                    className="w-full bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-t-xl relative shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:shadow-[0_0_60px_rgba(16,185,129,0.5)] transition-shadow duration-500"
+                                    className="w-full bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-t-xl relative shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:shadow-[0_0_60px_rgba(16,185,129,0.5)] transition-shadow duration-500 z-10"
                                 >
                                     <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%,transparent_100%)] bg-[length:250%_250%,100%_100%] bg-[position:-100%_0,0_0] bg-no-repeat animate-[shine_3s_infinite]" />
                                 </div>
