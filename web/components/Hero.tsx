@@ -10,9 +10,9 @@ import {
   Github,
   Monitor,
   Calendar,
-  Heart,
   Loader2,
   Sparkles,
+  ShoppingBag,
   Camera
 } from "lucide-react";
 import { 
@@ -34,12 +34,12 @@ const STAGGER_CONTAINER = {
 };
 
 const CURATED_PORTRAITS = [
-  "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1", // Man serious corporate
-  "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1", // Woman professional
-  "https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1", // Man creative black
-  "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1", // Woman corporate blue
-  "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1", // Man hoodie cool
-  "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1", // Woman glasses
+  "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
+  "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
+  "https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
+  "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
+  "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
+  "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1",
 ];
 
 const CURATED_BANNERS = [
@@ -51,11 +51,11 @@ const CURATED_BANNERS = [
 ];
 
 const CURATED_PRODUCTS = [
-  "https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=600", // Desk setup
-  "https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=600", // Coding
-  "https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=600", // Meeting
-  "https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg?auto=compress&cs=tinysrgb&w=600", // Design
-  "https://images.pexels.com/photos/3182773/pexels-photo-3182773.jpeg?auto=compress&cs=tinysrgb&w=600", // Handshake
+  "https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=600",
+  "https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=600",
+  "https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=600",
+  "https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg?auto=compress&cs=tinysrgb&w=600",
+  "https://images.pexels.com/photos/3182773/pexels-photo-3182773.jpeg?auto=compress&cs=tinysrgb&w=600",
 ];
 
 const ROLES = [
@@ -124,7 +124,7 @@ export function Hero() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % ROLES.length); // Roles and Actions sync
+      setIndex((prev) => (prev + 1) % ROLES.length);
     }, 3000);
     return () => clearInterval(interval);
   }, []);
@@ -148,7 +148,6 @@ export function Hero() {
         const res = await fetch('/api/pexels');
         const data = await res.json();
 
-        // Use Pexels if available, else Fallback to Curated Pexels Lists
         if (data.portraits?.length > 0) {
           const randomPortrait = data.portraits[Math.floor(Math.random() * data.portraits.length)];
           setProfileImage(randomPortrait.url || randomPortrait);
@@ -174,7 +173,6 @@ export function Hero() {
           setProduct1Image(shuffled[0].url || shuffled[0]);
           setProduct2Image(shuffled[1].url || shuffled[1]);
         } else {
-          // Fallback
           const shuffledProducts = [...CURATED_PRODUCTS].sort(() => Math.random() - 0.5);
           setProduct1Image(shuffledProducts[0]);
           setProduct2Image(shuffledProducts[1]);
@@ -182,7 +180,6 @@ export function Hero() {
 
       } catch (err) {
         console.error("Failed to fetch Pexels images, using fallback.");
-        // Fallback logic runs implicitly if state isn't updated, but let's force re-set just in case
         const randomPortraitId = CURATED_PORTRAITS[Math.floor(Math.random() * CURATED_PORTRAITS.length)];
         setProfileImage(`https://images.unsplash.com/${randomPortraitId}?w=400&h=400&fit=crop&crop=faces`);
       }
@@ -219,7 +216,6 @@ export function Hero() {
         setAvailability(data);
       } catch (err) {
         console.error("Error checking username:", err);
-        // Fail-safe for local dev without backend
         if (username.toLowerCase() === "admin" || username.toLowerCase() === "vasta") {
           setAvailability({
             available: false,
@@ -241,7 +237,6 @@ export function Hero() {
 
   return (
     <section className="relative overflow-hidden border-b border-vasta-border pt-24 pb-20 md:pb-32 lg:pt-40 bg-vasta-bg">
-      {/* Background radial gradients for depth */}
       <motion.div 
         animate={{ 
           scale: [1, 1.1, 1],
@@ -255,7 +250,6 @@ export function Hero() {
         className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.15),transparent_50%),radial-gradient(circle_at_bottom_right,rgba(236,72,153,0.1),transparent_50%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.08),transparent_50%),radial-gradient(circle_at_bottom_right,rgba(236,72,153,0.05),transparent_50%)]" 
       />
 
-      {/* Floating abstract decorative elements */}
       <motion.div 
         animate={{ y: [0, -20, 0], opacity: [0.5, 0.8, 0.5] }}
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
@@ -268,7 +262,6 @@ export function Hero() {
       />
 
       <div className="mx-auto flex max-w-7xl flex-col gap-16 px-4 md:flex-row md:items-center lg:gap-24">
-        {/* Left Side: Content */}
         <motion.div
             initial="hidden"
             animate={mounted ? "visible" : "hidden"}
@@ -425,8 +418,6 @@ export function Hero() {
           </motion.div>
         </motion.div>
 
-
-        {/* Right Side: Enhanced Phone Mockup */}
         <motion.div 
           className="flex flex-1 justify-center lg:justify-end perspective-[2000px]"
           initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
@@ -444,28 +435,19 @@ export function Hero() {
             }}
             className="relative group"
           >
-            {/* Glow behind phone */}
             <div className="absolute -inset-10 rounded-[4rem] bg-gradient-to-tr from-vasta-primary/40 to-vasta-accent/40 opacity-50 blur-3xl transition-opacity duration-1000 group-hover:opacity-70 dark:mix-blend-screen" 
                style={{ transform: "translateZ(-50px)" }}
             />
 
-            {/* Phone Frame - "Titanium" Look */}
             <div className="relative h-[500px] w-[250px] xs:h-[580px] xs:w-[290px] sm:h-[680px] sm:w-[340px] rounded-[2.5rem] sm:rounded-[3.5rem] bg-gradient-to-br from-gray-300 via-gray-100 to-gray-300 dark:from-gray-700 dark:via-gray-600 dark:to-gray-800 p-[3px] sm:p-[4px] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] sm:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] ring-1 ring-black/10 transition-shadow duration-500">
-              {/* Inner Frame Border */}
               <div className="absolute inset-0 rounded-[3.5rem] border-[6px] border-black/5 dark:border-black/20 pointer-events-none z-20" />
-              {/* Screen Bezel */}
               <div className="h-full w-full rounded-[3.2rem] bg-black p-[10px] relative overflow-hidden">
-                {/* Dynamic Island / Notch */}
                 <div className="absolute top-6 left-1/2 -translate-x-1/2 h-8 w-28 bg-black z-50 rounded-full flex items-center justify-between px-3">
-                  <div className="h-2 w-2 rounded-full bg-[#1c1c1e]/80" />{" "}
-                  {/* Camera */}
-                  <div className="h-1.5 w-1.5 rounded-full bg-green-500/50 animate-pulse" />{" "}
-                  {/* Privacy Indicator */}
+                  <div className="h-2 w-2 rounded-full bg-[#1c1c1e]/80" />
+                  <div className="h-1.5 w-1.5 rounded-full bg-green-500/50 animate-pulse" />
                 </div>
 
-                {/* Actual Screen Content */}
                 <div className="h-full w-full rounded-[2.8rem] bg-vasta-bg overflow-hidden relative flex flex-col">
-                  {/* Status Bar Mock */}
                   <div className="absolute top-0 w-full h-14 flex justify-between px-8 pt-5 text-[10px] font-semibold z-40 mix-blend-difference text-white">
                     <span>{currentTime}</span>
                     <div className="flex gap-1.5">
@@ -474,9 +456,7 @@ export function Hero() {
                     </div>
                   </div>
 
-                  {/* Scrollable Content Area */}
                   <div className="flex-1 overflow-y-auto mockup-scrollbar pb-32">
-                    {/* Banner */}
                     <div className="h-40 w-full relative overflow-hidden">
                       <img
                         src={bannerImage}
@@ -486,7 +466,6 @@ export function Hero() {
                       />
                       <div className="absolute bottom-0 w-full h-24 bg-gradient-to-t from-vasta-bg to-transparent" />
 
-                      {/* Credits Button */}
                       {bannerCredit && (
                         <div className="absolute bottom-2 right-2 z-30 flex flex-col items-end pointer-events-none">
                           <div className="group flex items-center bg-black/20 hover:bg-black/80 backdrop-blur-sm border border-white/10 hover:border-white/20 rounded-full py-1 px-1.5 transition-all duration-500 ease-out max-w-[24px] hover:max-w-[200px] overflow-hidden shadow-lg hover:shadow-2xl pointer-events-auto cursor-default">
@@ -518,7 +497,6 @@ export function Hero() {
                       )}
                     </div>
 
-                    {/* Profile Info */}
                     <div className="-mt-16 flex flex-col items-center px-6 relative z-10 animate-fade-in-up delay-100">
                       <div className="h-28 w-28 rounded-full border-[6px] border-vasta-bg bg-vasta-surface shadow-xl flex items-center justify-center p-1 relative group-hover:scale-105 transition-transform duration-500">
                         <img
@@ -546,7 +524,6 @@ export function Hero() {
                         de UX/UI todos os dias ✨
                       </p>
 
-                      {/* Social Row */}
                       <div className="flex gap-4 mt-6">
                         <div className="h-10 w-10 index-center rounded-full bg-vasta-surface border border-vasta-border flex items-center justify-center hover:scale-110 transition-transform cursor-pointer shadow-sm">
                           <Github className="h-5 w-5 text-vasta-text" />
@@ -560,7 +537,6 @@ export function Hero() {
                       </div>
                     </div>
 
-                    {/* Links Section */}
                     <div className="mt-8 space-y-3 px-5 relative z-10">
                       {[
                         {
@@ -613,7 +589,6 @@ export function Hero() {
 
                       <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col rounded-[1.5rem] bg-vasta-surface border border-vasta-border/50 p-0 hover:border-indigo-500/30 transition-colors cursor-pointer group/card overflow-hidden ring-1 ring-black/5">
-                          {/* Image Area */}
                           <div className="aspect-square relative overflow-hidden bg-gray-100">
                             <img
                               src={product1Image}
@@ -623,7 +598,6 @@ export function Hero() {
                             />
                           </div>
 
-                          {/* Content Area */}
                           <div className="p-3">
                             <div className="flex justify-between items-start mb-2">
                               <span className="text-[9px] font-bold text-vasta-muted uppercase tracking-wider">
@@ -643,7 +617,6 @@ export function Hero() {
                         </div>
 
                         <div className="flex flex-col rounded-[1.5rem] bg-vasta-surface border border-vasta-border/50 p-0 hover:border-pink-500/30 transition-colors cursor-pointer group/card overflow-hidden ring-1 ring-black/5">
-                          {/* Image Area */}
                           <div className="aspect-square relative overflow-hidden bg-gray-100">
                             <img
                               src={product2Image}
@@ -653,7 +626,6 @@ export function Hero() {
                             />
                           </div>
 
-                          {/* Content Area */}
                           <div className="p-3">
                             <div className="flex justify-between items-start mb-2">
                               <span className="text-[9px] font-bold text-vasta-muted uppercase tracking-wider">
@@ -674,7 +646,6 @@ export function Hero() {
                       </div>
                     </div>
 
-                    {/* Logo Footer */}
                     <div className="mt-6 flex justify-center pb-8 opacity-40 hover:opacity-100 transition-opacity">
                       <div className="flex items-center">
                         <img src="/logo.svg" alt="Vasta Logo" className="h-6 w-auto dark:hidden" />
@@ -683,7 +654,6 @@ export function Hero() {
                     </div>
                   </div>
 
-                  {/* Floating Action Button / Notification */}
                   <div className="absolute bottom-10 inset-x-0 flex justify-center z-50 px-4">
                     <div className="bg-vasta-surface/95 backdrop-blur-xl border border-vasta-border/50 text-vasta-text pl-1.5 pr-4 py-1.5 rounded-full flex items-center gap-2 shadow-2xl animate-fade-in-up delay-[1000ms] w-max max-w-full overflow-hidden">
                       <div className="flex -space-x-2 shrink-0">
@@ -711,15 +681,10 @@ export function Hero() {
                   </div>
                 </div>
               </div>
-              {/* Side Buttons (Physical) */}
-              <div className="absolute -left-[5px] top-24 h-8 w-[4px] rounded-l-md bg-gray-400 dark:bg-gray-600" />{" "}
-              {/* Mute */}
-              <div className="absolute -left-[5px] top-36 h-14 w-[4px] rounded-l-md bg-gray-400 dark:bg-gray-600" />{" "}
-              {/* Vol Up */}
-              <div className="absolute -left-[5px] top-52 h-14 w-[4px] rounded-l-md bg-gray-400 dark:bg-gray-600" />{" "}
-              {/* Vol Down */}
-              <div className="absolute -right-[5px] top-40 h-20 w-[4px] rounded-r-md bg-gray-400 dark:bg-gray-600" />{" "}
-              {/* Power */}
+              <div className="absolute -left-[5px] top-24 h-8 w-[4px] rounded-l-md bg-gray-400 dark:bg-gray-600" />
+              <div className="absolute -left-[5px] top-36 h-14 w-[4px] rounded-l-md bg-gray-400 dark:bg-gray-600" />
+              <div className="absolute -left-[5px] top-52 h-14 w-[4px] rounded-l-md bg-gray-400 dark:bg-gray-600" />
+              <div className="absolute -right-[5px] top-40 h-20 w-[4px] rounded-r-md bg-gray-400 dark:bg-gray-600" />
             </div>
           </motion.div>
         </motion.div>
