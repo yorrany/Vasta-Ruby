@@ -423,7 +423,7 @@ export function Hero() {
                 </div>
                 <span>Sem cartão de crédito</span>
               </div>
-            </motion.div>
+            </div>
           </motion.div>
 
 
