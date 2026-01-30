@@ -15,14 +15,14 @@ export default function HomePage() {
       <main>
         <Hero />
         <Integrations />
-        <HowItWorks />
-        <Pricing />
         <section id="calculadora" className="bg-vasta-bg py-20 px-4">
           <div className="mx-auto max-w-7xl">
             <ComparisonCalculator />
           </div>
         </section>
         <Testimonials />
+        <HowItWorks />
+        <Pricing />
         <FAQ />
       </main>
       <Footer />
